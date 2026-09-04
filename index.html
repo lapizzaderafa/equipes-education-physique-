@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#111111" />
+  <title>Équipes — Éducation physique</title>
+
+  <style>
+    :root{
+      --green:#16a34a;
+      --red:#dc2626;
+      --blue:#2563eb;
+      --yellow:#facc15;
+      --dark:#111827;
+    }
+
+    *{
+      box-sizing:border-box;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    html,body{
+      margin:0;
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      font-family:Arial, Helvetica, sans-serif;
+      background:#111;
+    }
+
+    button{
+      font:inherit;
+    }
+
+    .app{
+      height:100dvh;
+      width:100vw;
+      position:relative;
+    }
+
+    .view{
+      display:none;
+      width:100%;
+      height:100%;
+    }
+
+    .view.active{
+      display:block;
+    }
+
+    /* NAVIGATION */
+    .topbar{
+      position:absolute;
+      top:max(10px, env(safe-area-inset-top));
+      left:50%;
+      transform:translateX(-50%);
+      z-index:50;
+      display:flex;
+      gap:8px;
+      padding:7px;
+      border-radius:999px;
+      background:rgba(17,24,39,.82);
+      backdrop-filter:blur(10px);
+      box-shadow:0 8px 25px rgba(0,0,0,.22);
+    }
+
+    .tab{
+      border:none;
+      border-radius:999px;
+      padding:9px 15px;
+      font-weight:800;
+      cursor:pointer;
+      color:white;
+      background:transparent;
+    }
+
+    .tab.active{
+      background:white;
+      color:#111827;
+    }
+
+    /* JEU */
+    .game-grid{
+      width:100%;
+      height:100%;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      grid-template-rows:1fr 1fr;
+    }
+
+    .team{
+      position:relative;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      user-select:none;
+      overflow:hidden;
+    }
+
+    .team:active{
+      filter:brightness(.88);
+    }
+
+    .green{
+      background:var(--green);
+      color:white;
+    }
+
+    .red{
+      background:var(--red);
+      color:white;
+    }
+
+    .blue{
+      background:var(--blue);
+      color:white;
+    }
+
+    .yellow{
+      background:var(--yellow);
+      color:#111;
+    }
+
+    .team-content{
+      text-align:center;
+      pointer-events:none;
+    }
+
+    .team-name{
+      font-size:clamp(22px,4vw,58px);
+      font-weight:900;
+      text-transform:uppercase;
+      letter-spacing:.05em;
+      margin-bottom:4px;
+    }
+
+    .score{
+      font-size:clamp(80px,15vw,190px);
+      font-weight:950;
+      line-height:.9;
+      font-variant-numeric:tabular-nums;
+    }
+
+    .minus{
+      position:absolute;
+      right:16px;
+      bottom:16px;
+      width:56px;
+      height:56px;
+      border-radius:50%;
+      border:2px solid rgba(255,255,255,.5);
+      background:rgba(0,0,0,.25);
+      color:white;
+      font-size:30px;
+      font-weight:900;
+      cursor:pointer;
+      z-index:10;
+    }
+
+    .yellow .minus{
+      color:#111;
+      border-color:rgba(0,0,0,.25);
+      background:rgba(255,255,255,.35);
+    }
+
+    /* CLASSEMENT */
+    .ranking{
+      background:#f3f4f6;
+      overflow:auto;
+      padding:90px 18px 25px;
+    }
+
+    .ranking-wrap{
+      max-width:800px;
+      margin:0 auto;
+    }
+
+    .ranking h1{
+      margin:0 0 20px;
+      text-align:center;
+      color:#111827;
+      font-size:clamp(30px,5vw,54px);
+    }
+
+    .rank-list{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .rank-card{
+      display:grid;
+      grid-template-columns:60px 1fr auto;
+      align-items:center;
+      gap:14px;
+      min-height:88px;
+      padding:14px 18px;
+      border-radius:22px;
+      color:white;
+      box-shadow:0 8px 24px rgba(0,0,0,.12);
+    }
+
+    .rank-card.yellow{
+      color:#111;
+    }
+
+    .position{
+      font-size:34px;
+      font-weight:900;
+      text-align:center;
+    }
+
+    .rank-name{
+      font-size:clamp(22px,4vw,34px);
+      font-weight:900;
+      text-transform:uppercase;
+    }
+
+    .rank-score{
+      font-size:clamp(34px,6vw,54px);
+      font-weight:950;
+    }
+
+    .actions{
+      display:flex;
+      justify-content:center;
+      margin-top:24px;
+    }
+
+    .reset{
+      border:none;
+      border-radius:14px;
+      padding:12px 18px;
+      background:#111827;
+      color:white;
+      font-weight:800;
+      cursor:pointer;
+    }
+
+    /* PETIT FLASH QUAND +1 */
+    .flash{
+      position:absolute;
+      inset:0;
+      background:white;
+      pointer-events:none;
+      opacity:0;
+      z-index:100;
+    }
+
+    .flash.show{
+      animation:flash .18s ease;
+    }
+
+    @keyframes flash{
+      from{opacity:.16}
+      to{opacity:0}
+    }
+
+    @media(max-width:700px){
+      .minus{
+        width:46px;
+        height:46px;
+        right:10px;
+        bottom:10px;
+        font-size:25px;
+      }
+
+      .team-name{
+        font-size:clamp(18px,5vw,34px);
+      }
+
+      .score{
+        font-size:clamp(60px,20vw,120px);
+      }
+
+      .tab{
+        padding:8px 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="topbar">
+    <button class="tab active" data-view="game">Jeu</button>
+    <button class="tab" data-view="ranking">Classement</button>
+  </div>
+
+  <!-- JEU -->
+  <section id="game" class="view active">
+    <div class="game-grid">
+
+      <div class="team green" data-team="green">
+        <div class="team-content">
+          <div class="team-name">Verts</div>
+          <div class="score" id="score-green">0</div>
+        </div>
+        <button class="minus" data-minus="green">−</button>
+      </div>
+
+      <div class="team red" data-team="red">
+        <div class="team-content">
+          <div class="team-name">Rouges</div>
+          <div class="score" id="score-red">0</div>
+        </div>
+        <button class="minus" data-minus="red">−</button>
+      </div>
+
+      <div class="team blue" data-team="blue">
+        <div class="team-content">
+          <div class="team-name">Bleus</div>
+          <div class="score" id="score-blue">0</div>
+        </div>
+        <button class="minus" data-minus="blue">−</button>
+      </div>
+
+      <div class="team yellow" data-team="yellow">
+        <div class="team-content">
+          <div class="team-name">Jaunes</div>
+          <div class="score" id="score-yellow">0</div>
+        </div>
+        <button class="minus" data-minus="yellow">−</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CLASSEMENT -->
+  <section id="ranking" class="view ranking">
+    <div class="ranking-wrap">
+      <h1>Classement actuel</h1>
+
+      <div id="rank-list" class="rank-list"></div>
+
+      <div class="actions">
+        <button id="reset" class="reset">
+          Remettre tous les scores à zéro
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div id="flash" class="flash"></div>
+
+</div>
+
+<script>
+  const teams = {
+    green: {
+      name: "Verts",
+      colorClass: "green"
+    },
+    red: {
+      name: "Rouges",
+      colorClass: "red"
+    },
+    blue: {
+      name: "Bleus",
+      colorClass: "blue"
+    },
+    yellow: {
+      name: "Jaunes",
+      colorClass: "yellow"
+    }
+  };
+
+  const STORAGE_KEY = "eps-equipes-scores";
+
+  let scores = loadScores();
+
+  function loadScores(){
+    try{
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+
+      return {
+        green: Number(saved?.green) || 0,
+        red: Number(saved?.red) || 0,
+        blue: Number(saved?.blue) || 0,
+        yellow: Number(saved?.yellow) || 0
+      };
+
+    }catch{
+      return {
+        green:0,
+        red:0,
+        blue:0,
+        yellow:0
+      };
+    }
+  }
+
+  function saveScores(){
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(scores)
+    );
+  }
+
+  function addPoint(team){
+    scores[team]++;
+
+    saveScores();
+    render();
+    flashScreen();
+  }
+
+  function removePoint(team){
+    scores[team] = Math.max(
+      0,
+      scores[team] - 1
+    );
+
+    saveScores();
+    render();
+  }
+
+  function flashScreen(){
+    const flash = document.getElementById("flash");
+
+    flash.classList.remove("show");
+
+    void flash.offsetWidth;
+
+    flash.classList.add("show");
+  }
+
+  function render(){
+
+    Object.keys(teams).forEach(team => {
+      document.getElementById(
+        `score-${team}`
+      ).textContent = scores[team];
+    });
+
+    const sortedTeams =
+      Object.keys(teams)
+        .map((key,index) => ({
+          key,
+          index,
+          score:scores[key],
+          ...teams[key]
+        }))
+        .sort((a,b) => {
+          if(b.score !== a.score){
+            return b.score - a.score;
+          }
+
+          return a.index - b.index;
+        });
+
+    const list =
+      document.getElementById("rank-list");
+
+    list.innerHTML = "";
+
+    sortedTeams.forEach((team,index) => {
+
+      const card =
+        document.createElement("div");
+
+      card.className =
+        `rank-card ${team.colorClass}`;
+
+      card.innerHTML = `
+        <div class="position">
+          ${index + 1}
+        </div>
+
+        <div class="rank-name">
+          ${team.name}
+        </div>
+
+        <div class="rank-score">
+          ${team.score}
+        </div>
+      `;
+
+      list.appendChild(card);
+    });
+  }
+
+  /* +1 QUAND ON CLIQUE SUR LA COULEUR */
+  document
+    .querySelectorAll(".team")
+    .forEach(zone => {
+
+      zone.addEventListener(
+        "click",
+        event => {
+
+          if(
+            event.target.closest(".minus")
+          ){
+            return;
+          }
+
+          addPoint(
+            zone.dataset.team
+          );
+        }
+      );
+    });
+
+  /* -1 */
+  document
+    .querySelectorAll(".minus")
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        event => {
+
+          event.stopPropagation();
+
+          removePoint(
+            button.dataset.minus
+          );
+        }
+      );
+    });
+
+  /* ONGLETS */
+  document
+    .querySelectorAll(".tab")
+    .forEach(tab => {
+
+      tab.addEventListener(
+        "click",
+        () => {
+
+          document
+            .querySelectorAll(".tab")
+            .forEach(t => {
+              t.classList.remove("active");
+            });
+
+          document
+            .querySelectorAll(".view")
+            .forEach(view => {
+              view.classList.remove("active");
+            });
+
+          tab.classList.add("active");
+
+          document
+            .getElementById(
+              tab.dataset.view
+            )
+            .classList.add("active");
+
+          render();
+        }
+      );
+    });
+
+  /* RESET */
+  document
+    .getElementById("reset")
+    .addEventListener(
+      "click",
+      () => {
+
+        const confirmed =
+          confirm(
+            "Remettre les quatre équipes à zéro?"
+          );
+
+        if(!confirmed){
+          return;
+        }
+
+        scores = {
+          green:0,
+          red:0,
+          blue:0,
+          yellow:0
+        };
+
+        saveScores();
+        render();
+      }
+    );
+
+  render();
+</script>
+
+</body>
+</html>
