@@ -8,7 +8,7 @@
 
   <style>
     :root{
-      --green:#16a34a;
+      --white:#ffffff;
       --red:#dc2626;
       --blue:#2563eb;
       --yellow:#facc15;
@@ -103,9 +103,9 @@
       filter:brightness(.88);
     }
 
-    .green{
-      background:var(--green);
-      color:white;
+    .white{
+      background:var(--white);
+      color:#111827;
     }
 
     .red{
@@ -159,10 +159,11 @@
       z-index:10;
     }
 
+    .white .minus,
     .yellow .minus{
       color:#111;
       border-color:rgba(0,0,0,.25);
-      background:rgba(255,255,255,.35);
+      background:rgba(0,0,0,.08);
     }
 
     /* CLASSEMENT */
@@ -202,6 +203,7 @@
       box-shadow:0 8px 24px rgba(0,0,0,.12);
     }
 
+    .rank-card.white,
     .rank-card.yellow{
       color:#111;
     }
@@ -239,7 +241,6 @@
       cursor:pointer;
     }
 
-    /* PETIT FLASH QUAND +1 */
     .flash{
       position:absolute;
       inset:0;
@@ -291,25 +292,8 @@
     <button class="tab" data-view="ranking">Classement</button>
   </div>
 
-  <!-- JEU -->
   <section id="game" class="view active">
     <div class="game-grid">
-
-      <div class="team green" data-team="green">
-        <div class="team-content">
-          <div class="team-name">Verts</div>
-          <div class="score" id="score-green">0</div>
-        </div>
-        <button class="minus" data-minus="green">−</button>
-      </div>
-
-      <div class="team red" data-team="red">
-        <div class="team-content">
-          <div class="team-name">Rouges</div>
-          <div class="score" id="score-red">0</div>
-        </div>
-        <button class="minus" data-minus="red">−</button>
-      </div>
 
       <div class="team blue" data-team="blue">
         <div class="team-content">
@@ -317,6 +301,14 @@
           <div class="score" id="score-blue">0</div>
         </div>
         <button class="minus" data-minus="blue">−</button>
+      </div>
+
+      <div class="team white" data-team="white">
+        <div class="team-content">
+          <div class="team-name">Blancs</div>
+          <div class="score" id="score-white">0</div>
+        </div>
+        <button class="minus" data-minus="white">−</button>
       </div>
 
       <div class="team yellow" data-team="yellow">
@@ -327,10 +319,17 @@
         <button class="minus" data-minus="yellow">−</button>
       </div>
 
+      <div class="team red" data-team="red">
+        <div class="team-content">
+          <div class="team-name">Rouges</div>
+          <div class="score" id="score-red">0</div>
+        </div>
+        <button class="minus" data-minus="red">−</button>
+      </div>
+
     </div>
   </section>
 
-  <!-- CLASSEMENT -->
   <section id="ranking" class="view ranking">
     <div class="ranking-wrap">
       <h1>Classement actuel</h1>
@@ -351,21 +350,21 @@
 
 <script>
   const teams = {
-    green: {
-      name: "Verts",
-      colorClass: "green"
-    },
-    red: {
-      name: "Rouges",
-      colorClass: "red"
-    },
     blue: {
       name: "Bleus",
       colorClass: "blue"
     },
+    white: {
+      name: "Blancs",
+      colorClass: "white"
+    },
     yellow: {
       name: "Jaunes",
       colorClass: "yellow"
+    },
+    red: {
+      name: "Rouges",
+      colorClass: "red"
     }
   };
 
@@ -378,18 +377,21 @@
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
 
       return {
-        green: Number(saved?.green) || 0,
-        red: Number(saved?.red) || 0,
         blue: Number(saved?.blue) || 0,
-        yellow: Number(saved?.yellow) || 0
+
+        // récupère l'ancien score vert s'il existe
+        white: Number(saved?.white ?? saved?.green) || 0,
+
+        yellow: Number(saved?.yellow) || 0,
+        red: Number(saved?.red) || 0
       };
 
     }catch{
       return {
-        green:0,
-        red:0,
         blue:0,
-        yellow:0
+        white:0,
+        yellow:0,
+        red:0
       };
     }
   }
@@ -484,7 +486,6 @@
     });
   }
 
-  /* +1 QUAND ON CLIQUE SUR LA COULEUR */
   document
     .querySelectorAll(".team")
     .forEach(zone => {
@@ -506,7 +507,6 @@
       );
     });
 
-  /* -1 */
   document
     .querySelectorAll(".minus")
     .forEach(button => {
@@ -524,7 +524,6 @@
       );
     });
 
-  /* ONGLETS */
   document
     .querySelectorAll(".tab")
     .forEach(tab => {
@@ -558,7 +557,6 @@
       );
     });
 
-  /* RESET */
   document
     .getElementById("reset")
     .addEventListener(
@@ -575,10 +573,10 @@
         }
 
         scores = {
-          green:0,
-          red:0,
           blue:0,
-          yellow:0
+          white:0,
+          yellow:0,
+          red:0
         };
 
         saveScores();
