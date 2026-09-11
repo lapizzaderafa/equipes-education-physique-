@@ -1,8 +1,9 @@
 (function () {
   function setupTopPresenceButton() {
     const todayView = document.getElementById("view-today");
-    const dateToolbar = todayView?.querySelector(".date-toolbar");
-    if (!todayView || !dateToolbar || document.getElementById("presenceTopAction")) return;
+    const competitionArea = document.getElementById("competitionArea");
+    const matchHead = competitionArea?.querySelector(".section-head");
+    if (!todayView || !competitionArea || !matchHead || document.getElementById("presenceTopAction")) return;
 
     const wrap = document.createElement("div");
     wrap.id = "presenceTopAction";
@@ -17,11 +18,13 @@
         <span class="presence-top-arrow">›</span>
       </button>
     `;
-    todayView.insertBefore(wrap, dateToolbar);
+
+    matchHead.insertAdjacentElement("afterend", wrap);
 
     const btn = document.getElementById("presenceTopBtn");
     btn.addEventListener("click", () => {
       dayMode = dayMode === "presence" ? "matches" : "presence";
+      relocatePresenceButton();
       applyDayMode();
       if (dayMode === "presence") renderPresence();
       syncTopPresenceButton();
@@ -29,10 +32,28 @@
     });
 
     document.querySelectorAll(".nav-btn").forEach(nav => {
-      nav.addEventListener("click", () => setTimeout(syncTopPresenceButton, 0));
+      nav.addEventListener("click", () => setTimeout(() => {
+        relocatePresenceButton();
+        syncTopPresenceButton();
+      }, 0));
     });
 
+    relocatePresenceButton();
     syncTopPresenceButton();
+  }
+
+  function relocatePresenceButton() {
+    const wrap = document.getElementById("presenceTopAction");
+    const competitionArea = document.getElementById("competitionArea");
+    const matchHead = competitionArea?.querySelector(".section-head");
+    const presenceArea = document.getElementById("presenceArea");
+    if (!wrap || !matchHead || !presenceArea) return;
+
+    if (dayMode === "presence") {
+      presenceArea.parentNode.insertBefore(wrap, presenceArea);
+    } else {
+      matchHead.insertAdjacentElement("afterend", wrap);
+    }
   }
 
   function syncTopPresenceButton() {
