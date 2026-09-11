@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Coupe Typhon — Élèves</title>
+<link rel="stylesheet" href="./style.css?v=1">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <img src="https://raphaelfrenette-a11y.github.io/tournoi-couleurs/BDE620AE-F15F-4656-8219-360FD0ED92B9.png" alt="Logo Typhon des Pionniers">
+      <div><p>ÉCOLE DES PIONNIERS</p><h1>Coupe Typhon</h1><span>Espace élèves</span></div>
+    </div>
+    <div id="syncPill" class="sync-pill"><span></span><b id="syncText">Connexion…</b></div>
+  </header>
+
+  <main>
+    <section id="view-schedule" class="view active">
+      <div class="date-toolbar">
+        <button id="prevDay" class="date-arrow" type="button" aria-label="Jour précédent">‹</button>
+        <label class="date-box"><span>Date</span><input id="datePicker" type="date"></label>
+        <button id="nextDay" class="date-arrow" type="button" aria-label="Jour suivant">›</button>
+      </div>
+
+      <section id="dayHero" class="day-hero"></section>
+      <section id="scheduleArea"></section>
+    </section>
+
+    <section id="view-ranking" class="view">
+      <div class="page-head">
+        <p>CLASSEMENT</p>
+        <h2>Classement des couleurs</h2>
+        <span>Les journées comptent lorsqu’elles sont officiellement soumises par les deux gymnases.</span>
+      </div>
+      <div class="filters" role="tablist" aria-label="Filtrer le classement">
+        <button class="filter active" data-filter="all" type="button">Général</button>
+        <button class="filter" data-filter="S1" type="button">Sec. 1</button>
+        <button class="filter" data-filter="S2" type="button">Sec. 2</button>
+        <button class="filter" data-filter="S345" type="button">Sec. 3-4-5</button>
+      </div>
+      <div id="rankingList" class="ranking-list"></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-view="schedule" type="button"><span>📅</span><b>Horaire</b></button>
+    <button class="nav-btn" data-view="ranking" type="button"><span>🏆</span><b>Classement</b></button>
+  </nav>
+
+  <div id="rosterModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="rosterTitle">
+    <div class="modal-card">
+      <div id="rosterColor" class="modal-color"></div>
+      <div class="modal-head">
+        <div><p id="rosterLevel"></p><h2 id="rosterTitle">Équipe</h2><span>Liste provisoire</span></div>
+        <button id="closeRoster" type="button" aria-label="Fermer">×</button>
+      </div>
+      <div id="rosterList" class="roster-list"></div>
+    </div>
+  </div>
+</div>
+<script src="./app.js?v=1"></script>
+</body>
+</html>
