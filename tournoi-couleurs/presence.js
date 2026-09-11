@@ -13,7 +13,6 @@ let presenceSaving = false;
 
 const baseGetRecordForPresence = getRecord;
 const baseActiveRecordsForPresence = activeRecords;
-const baseRenderBonusesForPresence = renderBonuses;
 const baseRenderAllForPresence = renderAll;
 const baseSetDateForPresence = setDate;
 const baseShowViewForPresence = showView;
@@ -300,5 +299,4 @@ function savePresenceLocal() {
 }
 
 setupPresenceUI();
-renderPresence();
-applyDayMode();
+renderAll();
