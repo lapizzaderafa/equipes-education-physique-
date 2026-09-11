@@ -19,10 +19,7 @@
       --dark:#111827;
     }
 
-    *{
-      box-sizing:border-box;
-      -webkit-tap-highlight-color:transparent;
-    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 
     html,body{
       margin:0;
@@ -30,23 +27,13 @@
       height:100%;
       overflow:hidden;
       font-family:Arial, Helvetica, sans-serif;
-      background:#111;
+      background:var(--dark);
     }
 
     button{font:inherit}
 
-    .app{
-      height:100dvh;
-      width:100vw;
-      position:relative;
-    }
-
-    .view{
-      display:none;
-      width:100%;
-      height:100%;
-    }
-
+    .app{height:100dvh;width:100vw;position:relative}
+    .view{display:none;width:100%;height:100%}
     .view.active{display:block}
 
     .topbar{
@@ -59,7 +46,7 @@
       gap:8px;
       padding:7px;
       border-radius:999px;
-      background:rgba(17,24,39,.82);
+      background:rgba(17,24,39,.88);
       backdrop-filter:blur(10px);
       box-shadow:0 8px 25px rgba(0,0,0,.22);
     }
@@ -74,16 +61,15 @@
       background:transparent;
     }
 
-    .tab.active{
-      background:white;
-      color:#111827;
-    }
+    .tab.active{background:white;color:#111827}
 
     .game-grid{
       width:100%;
       height:100%;
       display:grid;
       grid-template-columns:repeat(5,1fr);
+      gap:4px;
+      background:var(--dark);
     }
 
     .team{
@@ -95,21 +81,17 @@
       user-select:none;
       overflow:hidden;
       min-width:0;
+      min-height:0;
     }
 
     .team:active{filter:brightness(.88)}
-
     .white{background:var(--white);color:#111827}
     .red{background:var(--red);color:white}
     .blue{background:var(--blue);color:white}
     .yellow{background:var(--yellow);color:#111}
     .green{background:var(--green);color:white}
 
-    .team-content{
-      text-align:center;
-      pointer-events:none;
-      min-width:0;
-    }
+    .team-content{text-align:center;pointer-events:none;min-width:0}
 
     .team-name{
       font-size:clamp(18px,2.8vw,52px);
@@ -142,10 +124,9 @@
       z-index:10;
     }
 
-    .white .minus,
-    .yellow .minus{
+    .white .minus,.yellow .minus{
       color:#111;
-      border-color:rgba(0,0,0,.25);
+      border-color:rgba(0,0,0,.3);
       background:rgba(0,0,0,.08);
     }
 
@@ -155,10 +136,7 @@
       padding:90px 18px 25px;
     }
 
-    .ranking-wrap{
-      max-width:800px;
-      margin:0 auto;
-    }
+    .ranking-wrap{max-width:800px;margin:0 auto}
 
     .ranking h1{
       margin:0 0 20px;
@@ -167,11 +145,7 @@
       font-size:clamp(30px,5vw,54px);
     }
 
-    .rank-list{
-      display:flex;
-      flex-direction:column;
-      gap:12px;
-    }
+    .rank-list{display:flex;flex-direction:column;gap:12px}
 
     .rank-card{
       display:grid;
@@ -185,31 +159,13 @@
       box-shadow:0 8px 24px rgba(0,0,0,.12);
     }
 
-    .rank-card.white,
-    .rank-card.yellow{color:#111}
+    .rank-card.white,.rank-card.yellow{color:#111}
+    .rank-card.white{border:3px solid #111827}
 
-    .position{
-      font-size:34px;
-      font-weight:900;
-      text-align:center;
-    }
-
-    .rank-name{
-      font-size:clamp(22px,4vw,34px);
-      font-weight:900;
-      text-transform:uppercase;
-    }
-
-    .rank-score{
-      font-size:clamp(34px,6vw,54px);
-      font-weight:950;
-    }
-
-    .actions{
-      display:flex;
-      justify-content:center;
-      margin-top:24px;
-    }
+    .position{font-size:34px;font-weight:900;text-align:center}
+    .rank-name{font-size:clamp(22px,4vw,34px);font-weight:900;text-transform:uppercase}
+    .rank-score{font-size:clamp(34px,6vw,54px);font-weight:950}
+    .actions{display:flex;justify-content:center;margin-top:24px}
 
     .reset{
       border:none;
@@ -221,50 +177,45 @@
       cursor:pointer;
     }
 
-    .flash{
-      position:absolute;
-      inset:0;
-      background:white;
-      pointer-events:none;
-      opacity:0;
-      z-index:100;
-    }
-
+    .flash{position:absolute;inset:0;background:white;pointer-events:none;opacity:0;z-index:100}
     .flash.show{animation:flash .18s ease}
 
-    @keyframes flash{
-      from{opacity:.16}
-      to{opacity:0}
-    }
+    @keyframes flash{from{opacity:.16}to{opacity:0}}
 
     @media(max-width:700px), (orientation:portrait){
       .game-grid{
-        grid-template-columns:1fr 1fr;
-        grid-template-rows:1fr 1fr .8fr;
+        grid-template-columns:1fr;
+        grid-template-rows:repeat(5,1fr);
+        gap:4px;
       }
 
-      .team.green{
-        grid-column:1 / -1;
+      .team{
+        justify-content:center;
       }
 
-      .minus{
-        width:46px;
-        height:46px;
-        right:10px;
-        bottom:10px;
-        font-size:25px;
+      .team-content{
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        gap:18px;
       }
 
       .team-name{
-        font-size:clamp(18px,5vw,34px);
+        margin:0;
+        font-size:clamp(20px,7vw,34px);
       }
 
       .score{
-        font-size:clamp(56px,17vw,118px);
+        font-size:clamp(52px,15vw,88px);
       }
 
-      .team.green .score{
-        font-size:clamp(48px,14vw,100px);
+      .minus{
+        width:44px;
+        height:44px;
+        right:10px;
+        bottom:50%;
+        transform:translateY(50%);
+        font-size:24px;
       }
 
       .tab{padding:8px 12px}
@@ -281,42 +232,27 @@
   <section id="game" class="view active">
     <div class="game-grid">
       <div class="team blue" data-team="blue">
-        <div class="team-content">
-          <div class="team-name">Bleus</div>
-          <div class="score" id="score-blue">0</div>
-        </div>
+        <div class="team-content"><div class="team-name">Bleus</div><div class="score" id="score-blue">0</div></div>
         <button class="minus" data-minus="blue">−</button>
       </div>
 
       <div class="team white" data-team="white">
-        <div class="team-content">
-          <div class="team-name">Blancs</div>
-          <div class="score" id="score-white">0</div>
-        </div>
+        <div class="team-content"><div class="team-name">Blancs</div><div class="score" id="score-white">0</div></div>
         <button class="minus" data-minus="white">−</button>
       </div>
 
       <div class="team yellow" data-team="yellow">
-        <div class="team-content">
-          <div class="team-name">Jaunes</div>
-          <div class="score" id="score-yellow">0</div>
-        </div>
+        <div class="team-content"><div class="team-name">Jaunes</div><div class="score" id="score-yellow">0</div></div>
         <button class="minus" data-minus="yellow">−</button>
       </div>
 
       <div class="team red" data-team="red">
-        <div class="team-content">
-          <div class="team-name">Rouges</div>
-          <div class="score" id="score-red">0</div>
-        </div>
+        <div class="team-content"><div class="team-name">Rouges</div><div class="score" id="score-red">0</div></div>
         <button class="minus" data-minus="red">−</button>
       </div>
 
       <div class="team green" data-team="green">
-        <div class="team-content">
-          <div class="team-name">Verts</div>
-          <div class="score" id="score-green">0</div>
-        </div>
+        <div class="team-content"><div class="team-name">Verts</div><div class="score" id="score-green">0</div></div>
         <button class="minus" data-minus="green">−</button>
       </div>
     </div>
@@ -326,9 +262,7 @@
     <div class="ranking-wrap">
       <h1>Classement actuel</h1>
       <div id="rank-list" class="rank-list"></div>
-      <div class="actions">
-        <button id="reset" class="reset">Remettre tous les scores à zéro</button>
-      </div>
+      <div class="actions"><button id="reset" class="reset">Remettre tous les scores à zéro</button></div>
     </div>
   </section>
 
@@ -351,7 +285,6 @@
     try{
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
       const hasWhite = !!saved && Object.prototype.hasOwnProperty.call(saved, "white");
-
       return {
         blue: Number(saved?.blue) || 0,
         white: Number(hasWhite ? saved?.white : saved?.green) || 0,
@@ -364,83 +297,67 @@
     }
   }
 
-  function saveScores(){
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
-  }
+  function saveScores(){localStorage.setItem(STORAGE_KEY, JSON.stringify(scores))}
 
-  function addPoint(team){
-    scores[team]++;
-    saveScores();
-    render();
-    flashScreen();
-  }
+  function addPoint(team){scores[team]++;saveScores();render();flashScreen()}
 
-  function removePoint(team){
-    scores[team] = Math.max(0, scores[team] - 1);
-    saveScores();
-    render();
-  }
+  function removePoint(team){scores[team]=Math.max(0,scores[team]-1);saveScores();render()}
 
   function flashScreen(){
-    const flash = document.getElementById("flash");
+    const flash=document.getElementById("flash");
     flash.classList.remove("show");
     void flash.offsetWidth;
     flash.classList.add("show");
   }
 
   function render(){
-    Object.keys(teams).forEach(team => {
-      document.getElementById(`score-${team}`).textContent = scores[team];
+    Object.keys(teams).forEach(team=>{
+      document.getElementById(`score-${team}`).textContent=scores[team];
     });
 
-    const sortedTeams = Object.keys(teams)
-      .map((key,index) => ({ key, index, score:scores[key], ...teams[key] }))
-      .sort((a,b) => b.score !== a.score ? b.score - a.score : a.index - b.index);
+    const sortedTeams=Object.keys(teams)
+      .map((key,index)=>({key,index,score:scores[key],...teams[key]}))
+      .sort((a,b)=>b.score!==a.score?b.score-a.score:a.index-b.index);
 
-    const list = document.getElementById("rank-list");
-    list.innerHTML = "";
+    const list=document.getElementById("rank-list");
+    list.innerHTML="";
 
-    sortedTeams.forEach((team,index) => {
-      const card = document.createElement("div");
-      card.className = `rank-card ${team.colorClass}`;
-      card.innerHTML = `
-        <div class="position">${index + 1}</div>
-        <div class="rank-name">${team.name}</div>
-        <div class="rank-score">${team.score}</div>
-      `;
+    sortedTeams.forEach((team,index)=>{
+      const card=document.createElement("div");
+      card.className=`rank-card ${team.colorClass}`;
+      card.innerHTML=`<div class="position">${index+1}</div><div class="rank-name">${team.name}</div><div class="rank-score">${team.score}</div>`;
       list.appendChild(card);
     });
   }
 
-  document.querySelectorAll(".team").forEach(zone => {
-    zone.addEventListener("click", event => {
+  document.querySelectorAll(".team").forEach(zone=>{
+    zone.addEventListener("click",event=>{
       if(event.target.closest(".minus")) return;
       addPoint(zone.dataset.team);
     });
   });
 
-  document.querySelectorAll(".minus").forEach(button => {
-    button.addEventListener("click", event => {
+  document.querySelectorAll(".minus").forEach(button=>{
+    button.addEventListener("click",event=>{
       event.stopPropagation();
       removePoint(button.dataset.minus);
     });
   });
 
-  document.querySelectorAll(".tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-      document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
+  document.querySelectorAll(".tab").forEach(tab=>{
+    tab.addEventListener("click",()=>{
+      document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+      document.querySelectorAll(".view").forEach(view=>view.classList.remove("active"));
       tab.classList.add("active");
       document.getElementById(tab.dataset.view).classList.add("active");
       render();
     });
   });
 
-  document.getElementById("reset").addEventListener("click", () => {
-    const confirmed = confirm("Remettre les cinq équipes à zéro?");
+  document.getElementById("reset").addEventListener("click",()=>{
+    const confirmed=confirm("Remettre les cinq équipes à zéro?");
     if(!confirmed) return;
-
-    scores = { blue:0, white:0, yellow:0, red:0, green:0 };
+    scores={blue:0,white:0,yellow:0,red:0,green:0};
     saveScores();
     render();
   });
