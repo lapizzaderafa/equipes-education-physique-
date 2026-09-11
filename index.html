@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <meta name="theme-color" content="#111111" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>Équipes — Éducation physique</title>
 
   <style>
@@ -12,6 +15,7 @@
       --red:#dc2626;
       --blue:#2563eb;
       --yellow:#facc15;
+      --green:#16a34a;
       --dark:#111827;
     }
 
@@ -29,9 +33,7 @@
       background:#111;
     }
 
-    button{
-      font:inherit;
-    }
+    button{font:inherit}
 
     .app{
       height:100dvh;
@@ -45,11 +47,8 @@
       height:100%;
     }
 
-    .view.active{
-      display:block;
-    }
+    .view.active{display:block}
 
-    /* NAVIGATION */
     .topbar{
       position:absolute;
       top:max(10px, env(safe-area-inset-top));
@@ -80,13 +79,11 @@
       color:#111827;
     }
 
-    /* JEU */
     .game-grid{
       width:100%;
       height:100%;
       display:grid;
-      grid-template-columns:1fr 1fr;
-      grid-template-rows:1fr 1fr;
+      grid-template-columns:repeat(5,1fr);
     }
 
     .team{
@@ -97,47 +94,33 @@
       cursor:pointer;
       user-select:none;
       overflow:hidden;
+      min-width:0;
     }
 
-    .team:active{
-      filter:brightness(.88);
-    }
+    .team:active{filter:brightness(.88)}
 
-    .white{
-      background:var(--white);
-      color:#111827;
-    }
-
-    .red{
-      background:var(--red);
-      color:white;
-    }
-
-    .blue{
-      background:var(--blue);
-      color:white;
-    }
-
-    .yellow{
-      background:var(--yellow);
-      color:#111;
-    }
+    .white{background:var(--white);color:#111827}
+    .red{background:var(--red);color:white}
+    .blue{background:var(--blue);color:white}
+    .yellow{background:var(--yellow);color:#111}
+    .green{background:var(--green);color:white}
 
     .team-content{
       text-align:center;
       pointer-events:none;
+      min-width:0;
     }
 
     .team-name{
-      font-size:clamp(22px,4vw,58px);
+      font-size:clamp(18px,2.8vw,52px);
       font-weight:900;
       text-transform:uppercase;
-      letter-spacing:.05em;
-      margin-bottom:4px;
+      letter-spacing:.04em;
+      margin-bottom:6px;
     }
 
     .score{
-      font-size:clamp(80px,15vw,190px);
+      font-size:clamp(64px,10vw,170px);
       font-weight:950;
       line-height:.9;
       font-variant-numeric:tabular-nums;
@@ -145,10 +128,10 @@
 
     .minus{
       position:absolute;
-      right:16px;
-      bottom:16px;
-      width:56px;
-      height:56px;
+      right:14px;
+      bottom:14px;
+      width:54px;
+      height:54px;
       border-radius:50%;
       border:2px solid rgba(255,255,255,.5);
       background:rgba(0,0,0,.25);
@@ -166,7 +149,6 @@
       background:rgba(0,0,0,.08);
     }
 
-    /* CLASSEMENT */
     .ranking{
       background:#f3f4f6;
       overflow:auto;
@@ -196,17 +178,15 @@
       grid-template-columns:60px 1fr auto;
       align-items:center;
       gap:14px;
-      min-height:88px;
-      padding:14px 18px;
+      min-height:82px;
+      padding:13px 18px;
       border-radius:22px;
       color:white;
       box-shadow:0 8px 24px rgba(0,0,0,.12);
     }
 
     .rank-card.white,
-    .rank-card.yellow{
-      color:#111;
-    }
+    .rank-card.yellow{color:#111}
 
     .position{
       font-size:34px;
@@ -250,16 +230,23 @@
       z-index:100;
     }
 
-    .flash.show{
-      animation:flash .18s ease;
-    }
+    .flash.show{animation:flash .18s ease}
 
     @keyframes flash{
       from{opacity:.16}
       to{opacity:0}
     }
 
-    @media(max-width:700px){
+    @media(max-width:700px), (orientation:portrait){
+      .game-grid{
+        grid-template-columns:1fr 1fr;
+        grid-template-rows:1fr 1fr .8fr;
+      }
+
+      .team.green{
+        grid-column:1 / -1;
+      }
+
       .minus{
         width:46px;
         height:46px;
@@ -273,20 +260,19 @@
       }
 
       .score{
-        font-size:clamp(60px,20vw,120px);
+        font-size:clamp(56px,17vw,118px);
       }
 
-      .tab{
-        padding:8px 12px;
+      .team.green .score{
+        font-size:clamp(48px,14vw,100px);
       }
+
+      .tab{padding:8px 12px}
     }
   </style>
 </head>
-
 <body>
-
 <div class="app">
-
   <div class="topbar">
     <button class="tab active" data-view="game">Jeu</button>
     <button class="tab" data-view="ranking">Classement</button>
@@ -294,7 +280,6 @@
 
   <section id="game" class="view active">
     <div class="game-grid">
-
       <div class="team blue" data-team="blue">
         <div class="team-content">
           <div class="team-name">Bleus</div>
@@ -327,265 +312,140 @@
         <button class="minus" data-minus="red">−</button>
       </div>
 
+      <div class="team green" data-team="green">
+        <div class="team-content">
+          <div class="team-name">Verts</div>
+          <div class="score" id="score-green">0</div>
+        </div>
+        <button class="minus" data-minus="green">−</button>
+      </div>
     </div>
   </section>
 
   <section id="ranking" class="view ranking">
     <div class="ranking-wrap">
       <h1>Classement actuel</h1>
-
       <div id="rank-list" class="rank-list"></div>
-
       <div class="actions">
-        <button id="reset" class="reset">
-          Remettre tous les scores à zéro
-        </button>
+        <button id="reset" class="reset">Remettre tous les scores à zéro</button>
       </div>
     </div>
   </section>
 
   <div id="flash" class="flash"></div>
-
 </div>
 
 <script>
   const teams = {
-    blue: {
-      name: "Bleus",
-      colorClass: "blue"
-    },
-    white: {
-      name: "Blancs",
-      colorClass: "white"
-    },
-    yellow: {
-      name: "Jaunes",
-      colorClass: "yellow"
-    },
-    red: {
-      name: "Rouges",
-      colorClass: "red"
-    }
+    blue: { name: "Bleus", colorClass: "blue" },
+    white: { name: "Blancs", colorClass: "white" },
+    yellow: { name: "Jaunes", colorClass: "yellow" },
+    red: { name: "Rouges", colorClass: "red" },
+    green: { name: "Verts", colorClass: "green" }
   };
 
   const STORAGE_KEY = "eps-equipes-scores";
-
   let scores = loadScores();
 
   function loadScores(){
     try{
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      const hasWhite = !!saved && Object.prototype.hasOwnProperty.call(saved, "white");
 
       return {
         blue: Number(saved?.blue) || 0,
-
-        // récupère l'ancien score vert s'il existe
-        white: Number(saved?.white ?? saved?.green) || 0,
-
+        white: Number(hasWhite ? saved?.white : saved?.green) || 0,
         yellow: Number(saved?.yellow) || 0,
-        red: Number(saved?.red) || 0
+        red: Number(saved?.red) || 0,
+        green: Number(hasWhite ? saved?.green : 0) || 0
       };
-
     }catch{
-      return {
-        blue:0,
-        white:0,
-        yellow:0,
-        red:0
-      };
+      return { blue:0, white:0, yellow:0, red:0, green:0 };
     }
   }
 
   function saveScores(){
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify(scores)
-    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
   }
 
   function addPoint(team){
     scores[team]++;
-
     saveScores();
     render();
     flashScreen();
   }
 
   function removePoint(team){
-    scores[team] = Math.max(
-      0,
-      scores[team] - 1
-    );
-
+    scores[team] = Math.max(0, scores[team] - 1);
     saveScores();
     render();
   }
 
   function flashScreen(){
     const flash = document.getElementById("flash");
-
     flash.classList.remove("show");
-
     void flash.offsetWidth;
-
     flash.classList.add("show");
   }
 
   function render(){
-
     Object.keys(teams).forEach(team => {
-      document.getElementById(
-        `score-${team}`
-      ).textContent = scores[team];
+      document.getElementById(`score-${team}`).textContent = scores[team];
     });
 
-    const sortedTeams =
-      Object.keys(teams)
-        .map((key,index) => ({
-          key,
-          index,
-          score:scores[key],
-          ...teams[key]
-        }))
-        .sort((a,b) => {
-          if(b.score !== a.score){
-            return b.score - a.score;
-          }
+    const sortedTeams = Object.keys(teams)
+      .map((key,index) => ({ key, index, score:scores[key], ...teams[key] }))
+      .sort((a,b) => b.score !== a.score ? b.score - a.score : a.index - b.index);
 
-          return a.index - b.index;
-        });
-
-    const list =
-      document.getElementById("rank-list");
-
+    const list = document.getElementById("rank-list");
     list.innerHTML = "";
 
     sortedTeams.forEach((team,index) => {
-
-      const card =
-        document.createElement("div");
-
-      card.className =
-        `rank-card ${team.colorClass}`;
-
+      const card = document.createElement("div");
+      card.className = `rank-card ${team.colorClass}`;
       card.innerHTML = `
-        <div class="position">
-          ${index + 1}
-        </div>
-
-        <div class="rank-name">
-          ${team.name}
-        </div>
-
-        <div class="rank-score">
-          ${team.score}
-        </div>
+        <div class="position">${index + 1}</div>
+        <div class="rank-name">${team.name}</div>
+        <div class="rank-score">${team.score}</div>
       `;
-
       list.appendChild(card);
     });
   }
 
-  document
-    .querySelectorAll(".team")
-    .forEach(zone => {
-
-      zone.addEventListener(
-        "click",
-        event => {
-
-          if(
-            event.target.closest(".minus")
-          ){
-            return;
-          }
-
-          addPoint(
-            zone.dataset.team
-          );
-        }
-      );
+  document.querySelectorAll(".team").forEach(zone => {
+    zone.addEventListener("click", event => {
+      if(event.target.closest(".minus")) return;
+      addPoint(zone.dataset.team);
     });
+  });
 
-  document
-    .querySelectorAll(".minus")
-    .forEach(button => {
-
-      button.addEventListener(
-        "click",
-        event => {
-
-          event.stopPropagation();
-
-          removePoint(
-            button.dataset.minus
-          );
-        }
-      );
+  document.querySelectorAll(".minus").forEach(button => {
+    button.addEventListener("click", event => {
+      event.stopPropagation();
+      removePoint(button.dataset.minus);
     });
+  });
 
-  document
-    .querySelectorAll(".tab")
-    .forEach(tab => {
-
-      tab.addEventListener(
-        "click",
-        () => {
-
-          document
-            .querySelectorAll(".tab")
-            .forEach(t => {
-              t.classList.remove("active");
-            });
-
-          document
-            .querySelectorAll(".view")
-            .forEach(view => {
-              view.classList.remove("active");
-            });
-
-          tab.classList.add("active");
-
-          document
-            .getElementById(
-              tab.dataset.view
-            )
-            .classList.add("active");
-
-          render();
-        }
-      );
+  document.querySelectorAll(".tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+      document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view").forEach(view => view.classList.remove("active"));
+      tab.classList.add("active");
+      document.getElementById(tab.dataset.view).classList.add("active");
+      render();
     });
+  });
 
-  document
-    .getElementById("reset")
-    .addEventListener(
-      "click",
-      () => {
+  document.getElementById("reset").addEventListener("click", () => {
+    const confirmed = confirm("Remettre les cinq équipes à zéro?");
+    if(!confirmed) return;
 
-        const confirmed =
-          confirm(
-            "Remettre les quatre équipes à zéro?"
-          );
-
-        if(!confirmed){
-          return;
-        }
-
-        scores = {
-          blue:0,
-          white:0,
-          yellow:0,
-          red:0
-        };
-
-        saveScores();
-        render();
-      }
-    );
+    scores = { blue:0, white:0, yellow:0, red:0, green:0 };
+    saveScores();
+    render();
+  });
 
   render();
 </script>
-
 </body>
 </html>
