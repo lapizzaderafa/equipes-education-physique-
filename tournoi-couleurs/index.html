@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Coupe Typhon</title>
+<link rel="stylesheet" href="./tournoi.css?v=3">
+<style>.typhon-logo{width:96px!important;height:72px!important;object-fit:cover!important;border-radius:16px!important}@media(max-width:470px){.typhon-logo{width:82px!important;height:62px!important}}</style>
+</head>
+<body>
+<div id="app">
+<header class="topbar">
+  <div class="brand"><img class="typhon-logo" src="https://raphaelfrenette-a11y.github.io/tournoi-couleurs/BDE620AE-F15F-4656-8219-360FD0ED92B9.png" alt="Logo Typhon des Pionniers"><div><p class="eyebrow">ÉCOLE DES PIONNIERS</p><h1>Coupe Typhon</h1></div></div>
+  <div class="top-actions"><span id="syncPill" class="sync-pill"><span class="sync-dot"></span><span id="syncText">Connexion…</span></span><button id="gymChip" class="gym-chip" type="button">Choisir gym</button></div>
+</header>
+<main>
+<section id="view-today" class="view active">
+  <div class="date-toolbar"><button id="prevDayBtn" class="icon-btn" type="button">‹</button><label class="date-field"><span>Date</span><input id="datePicker" type="date"></label><button id="nextDayBtn" class="icon-btn" type="button">›</button></div>
+  <section id="dayStatus" class="hero-card"></section>
+  <div id="competitionArea" hidden>
+    <div class="section-head"><div><p class="kicker">MES MATCHS</p><h2 id="gymTitle">Gymnase</h2></div></div>
+    <p class="helper">Les résultats s’enregistrent automatiquement. Reclique sur un résultat sélectionné pour l’enlever.</p>
+    <div id="matches" class="schedule"></div>
+    <section><div class="section-head"><div><p class="kicker">POINTS BONUS PARTAGÉS</p><h2>1 point par critère</h2></div></div><p class="helper">Les bonus sont facultatifs. Non cochés = 0 point; ils ne bloquent jamais la soumission des matchs.</p><div id="bonusGrid" class="bonus-grid"></div></section>
+    <section><div class="section-head"><div><p class="kicker">APERÇU</p><h2>Points de la journée</h2></div></div><div id="dayPoints" class="points-grid"></div></section>
+    <section id="submitCard" class="submit-card"></section>
+    <div class="autosave"><span>●</span><span id="saveState">Connexion…</span></div>
+  </div>
+</section>
+<section id="view-ranking" class="view">
+  <div class="page-head"><p class="kicker">CLASSEMENT</p><h2>Classement général</h2><p>Une journée compte au classement lorsque les gymnases A et B ont chacun soumis leurs 3 matchs. Victoire 2 pts · Nulle 1 pt · Défaite 0 pt · jusqu’à 3 bonus.</p></div>
+  <div class="segmented"><button class="segment active" data-filter="all">Tous</button><button class="segment" data-filter="S1">Sec. 1</button><button class="segment" data-filter="S2">Sec. 2</button><button class="segment" data-filter="S345">Sec. 3-4-5</button></div>
+  <div id="rankingCards" class="ranking-list"></div><p class="helper center">Bris d’égalité : points totaux, points de match, puis victoires.</p>
+</section>
+<section id="view-history" class="view">
+  <div class="page-head"><p class="kicker">HISTORIQUE</p><h2>Journées</h2><p>Chaque gym peut enregistrer ses 3 matchs séparément. La journée devient officielle quand les deux gyms sont soumis.</p></div>
+  <div id="historyList" class="history-list"></div>
+</section>
+<section id="view-settings" class="view">
+  <div class="page-head"><p class="kicker">GESTION</p><h2>Paramètres</h2></div>
+  <article class="settings-card firebase-box"><h3>Synchronisation en direct</h3><p id="firebaseStatusText">Connexion au classement partagé…</p></article>
+  <article class="settings-card"><h3>Gymnase de cet appareil</h3><p id="deviceGymText">Aucun gymnase choisi.</p><button id="changeGymBtn" class="secondary-btn" type="button">Changer de gymnase</button></article>
+  <article class="settings-card"><h3>Correction manuelle du jour-cycle</h3><p>Utile si une fermeture ou un changement exceptionnel modifie le calendrier.</p><div class="override-form"><label><span>Date</span><input id="overrideDate" type="date"></label><label><span>Jour-cycle</span><select id="overrideCycle"><option value="">Automatique</option><option value="none">Aucun cours</option><option value="1">Jour 1</option><option value="2">Jour 2</option><option value="3">Jour 3</option><option value="4">Jour 4</option><option value="5">Jour 5</option><option value="6">Jour 6</option><option value="7">Jour 7</option><option value="8">Jour 8</option><option value="9">Jour 9</option></select></label><button id="saveOverrideBtn" class="secondary-btn" type="button">Enregistrer la correction</button></div><div id="overrideList" class="override-list"></div></article>
+  <article class="settings-card danger-card"><h3>Réinitialiser les données locales</h3><p>N’efface pas le classement partagé; efface seulement les corrections locales de cet appareil.</p><button id="resetBtn" class="danger-btn" type="button">Réinitialiser la copie locale</button></article>
+</section>
+</main>
+<nav class="bottom-nav"><button class="nav-btn active" data-view="today"><span class="nav-icon">⚽</span><span>Matchs</span></button><button class="nav-btn" data-view="ranking"><span class="nav-icon">🏆</span><span>Classement</span></button><button class="nav-btn" data-view="history"><span class="nav-icon">📅</span><span>Journées</span></button><button class="nav-btn" data-view="settings"><span class="nav-icon">⚙️</span><span>Gestion</span></button></nav>
+<div id="toast" class="toast"></div>
+</div>
+<div id="gymGate" class="gym-gate hidden"><div class="gym-dialog"><div class="emoji">🏀</div><h2>Quel gymnase arbitres-tu?</h2><p>L’application mémorise ce gymnase sur cet appareil et affiche uniquement ses 3 matchs.</p><div class="gym-choice"><button data-pick-gym="A">GYMNASE A</button><button data-pick-gym="B">GYMNASE B</button></div></div></div>
+<script src="./tournoi.js?v=3"></script>
+</body>
+</html>
