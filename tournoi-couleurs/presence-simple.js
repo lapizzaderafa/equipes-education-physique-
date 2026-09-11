@@ -1,4 +1,17 @@
 (function () {
+  function teamsForCurrentGym(info) {
+    if (!selectedGym || !info?.level) return [];
+    const r = getRecord(selectedDate, info.level) || blankRecord(selectedDate, info);
+    const teams = new Set();
+    normalizedMatches(r)
+      .filter(match => match.gym === selectedGym)
+      .forEach(match => {
+        teams.add(match.a);
+        teams.add(match.b);
+      });
+    return TEAM_ORDER.filter(team => teams.has(team));
+  }
+
   renderPresence = function() {
     const area = document.getElementById("presenceArea");
     if (!area) return;
@@ -9,13 +22,28 @@
       return;
     }
 
+    if (!selectedGym) {
+      area.innerHTML = `<div class="presence-simple-empty">Choisis ton gymnase pour prendre les présences.</div>`;
+      return;
+    }
+
+    const allowedTeams = teamsForCurrentGym(info);
+    if (!allowedTeams.length) {
+      area.innerHTML = `<div class="presence-simple-empty">Aucune équipe à prendre en présence dans le Gym ${esc(selectedGym)}.</div>`;
+      return;
+    }
+
+    if (!allowedTeams.includes(selectedPresenceTeam)) {
+      selectedPresenceTeam = allowedTeams[0];
+    }
+
     const base = recordKey(selectedDate, info.level);
     const frag = presenceSource(base, selectedPresenceTeam, selectedDate, info);
     const roster = rosterFor(info.level, selectedPresenceTeam);
 
     area.innerHTML = `
-      <div class="presence-simple-teams">
-        ${TEAM_ORDER.map(team => `<button type="button" class="presence-simple-team team-${team} ${team === selectedPresenceTeam ? "active" : ""}" data-presence-team="${team}">${TEAMS[team].label}</button>`).join("")}
+      <div class="presence-simple-teams" style="grid-template-columns:repeat(${allowedTeams.length},minmax(0,1fr))">
+        ${allowedTeams.map(team => `<button type="button" class="presence-simple-team team-${team} ${team === selectedPresenceTeam ? "active" : ""}" data-presence-team="${team}">${TEAMS[team].label}</button>`).join("")}
       </div>
 
       <div class="presence-simple-list">
@@ -51,6 +79,12 @@
     area.querySelectorAll("input[data-student]").forEach(input => {
       input.addEventListener("change", () => savePresenceField(input.dataset.student, input.dataset.field, input.checked));
     });
+  };
+
+  const originalChooseGym = chooseGym;
+  chooseGym = function(g) {
+    originalChooseGym(g);
+    if (dayMode === "presence") renderPresence();
   };
 
   if (typeof refreshPresenceUI === "function") refreshPresenceUI();
