@@ -5,11 +5,11 @@
   function resultSummary(match) {
     if (!match.result) return `<div class="result-confirmation empty">Choisis le résultat du match</div>`;
     if (match.result === "draw") {
-      return `<div class="result-confirmation confirmed"><span class="confirm-check">✓</span><span>Match nul enregistré — 1 point par équipe</span></div>`;
+      return `<div class="result-confirmation confirmed"><div class="result-outcome-row"><span class="result-outcome-pill draw">✓ Match nul · 1 point chacun</span></div></div>`;
     }
     const winner = match.result;
     const loser = winner === match.a ? match.b : match.a;
-    return `<div class="result-confirmation confirmed"><span class="confirm-check">✓</span><span>Victoire ${TEAMS[winner].label} — ${TEAMS[loser].label} en défaite</span></div>`;
+    return `<div class="result-confirmation confirmed"><div class="result-outcome-row"><span class="result-outcome-pill win">✓ Victoire ${TEAMS[winner].label}</span><span class="result-outcome-arrow">→</span><span class="result-outcome-pill loss">Défaite ${TEAMS[loser].label}</span></div></div>`;
   }
 
   function teamResultButton(match, team, locked) {
@@ -41,8 +41,8 @@
             ${teamResultButton(m, m.a, locked)}
             <button ${locked ? "disabled" : ""} aria-pressed="${drawSelected ? "true" : "false"}" class="result-btn result-draw ${drawSelected ? "selected" : ""}" data-match-id="${m.id}" data-result="draw">
               <span class="result-choice-check">✓</span>
-              <span class="result-choice-label">Résultat</span>
-              <strong>Nulle</strong>
+              <span class="result-choice-label">Match</span>
+              <strong>Nul</strong>
             </button>
             ${teamResultButton(m, m.b, locked)}
           </div>
