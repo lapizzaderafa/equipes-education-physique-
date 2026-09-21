@@ -5,7 +5,7 @@ const REST_URL=`${SUPABASE_URL}/rest/v1/eps_tournoi_records`;
 
 const TEAMS={rouge:{label:"Rouge",className:"red"},vert:{label:"Vert",className:"green"},bleu:{label:"Bleu",className:"blue"},jaune:{label:"Jaune",className:"yellow"}};
 const TEAM_ORDER=["rouge","vert","bleu","jaune"];
-const LEVELS={S1:"Secondaire 1",S2:"Secondaire 2",S345:"Secondaire 3-4-5"};
+const LEVELS={S12:"Secondaire 1-2",S345:"Secondaire 3-4-5",S1:"Secondaire 1-2",S2:"Secondaire 1-2"};
 const DAILY_MATCHES=[
   {id:1,slot:1,time:"11 h 30 – 11 h 40",gym:"A",a:"rouge",b:"vert"},
   {id:2,slot:1,time:"11 h 30 – 11 h 40",gym:"B",a:"bleu",b:"jaune"},
@@ -15,13 +15,20 @@ const DAILY_MATCHES=[
   {id:6,slot:3,time:"11 h 50 – 12 h 00",gym:"B",a:"vert",b:"bleu"}
 ];
 
-const BASE_ROSTERS={
-  rouge:["Alexis Martin","Émile Roy","Nathan Gagnon","Thomas Bouchard","Léo Fortin","Olivier Côté","Félix Tremblay","Charles Pelletier","Jacob Morin","Antoine Lavoie"],
-  vert:["Samuel Girard","Louis Bergeron","Noah Bélanger","Gabriel Gauthier","William Caron","Henri Beaulieu","Mathis Lévesque","Raphaël Cloutier","Elliot Dufour","Jules Parent"],
-  bleu:["Milan Dubois","Xavier Fournier","Arthur Renaud","Édouard Simard","Logan Poirier","Victor Lapointe","Malik Desjardins","Nolan Landry","Théo Hébert","Mathieu Ouellet"],
-  jaune:["Benjamin Mercier","Zachary Lemieux","Adam Nadeau","Tristan Proulx","Éli Paquette","Maxime Bédard","Lucas Turcotte","Alec Richard","Dylan Charest","Mikaël Savard"]
+const ROSTERS={
+  S12:{
+    rouge:["Clara Belzile","Alice Grenier","Ariane Bélanger","Ève Briand","Maxim Drouin","Henri Foster","Jules Larivière","Mya Larouche","Lya Marceau","Arnaud Néron","Manda Ramanandraibe Hiaro","Edouard Sirois","Victor Tanguay","Cassandra Fiset","Laïla Tanguay"],
+    vert:["Thierry Bellavance","Sarah-Maude Fortin","Camille moore","Florence Giguère","Alexandre Germain","lexie labrecque","Jérémy Letellier","Jeanne Paradis","Florence Roux","jacob talbot","Koralie Dion","Alycia Marcil","Jade Roberge","Maxime Mercier","Laurence Julien","Thomas Mercier"],
+    bleu:["Alfred Elliot Anctil","Martin Coronel","Éliane Dubé","Éliam Fournier","Rosalie Julien","Justine Lasalle","léonie martel","Mélodie Otis-Dubé","Émilia roger","Flavie St-Laurent","Léo Jason Andriamboavonjy","Maryane Lachance","Viktoriia Lisnycha","Ariane Bolduc","Mehdi Chachia Plamondon"],
+    jaune:["Emy-Anne Côté","Arsène Mvondo Wong","Baptiste Autret","Estée Bouchard","Tyfany Russel","Anais Fortin","Zara Grimard","Matthew Lajeunesse","Chloé Mainguy","Tasnim Naouali","Jeanne Polisois","julien vallières","Dominic Dionne","Josianne Dolet","charles-olivier seaborn"]
+  },
+  S345:{
+    rouge:["Tom Arsenault","Simone Beaudin","Zackary Pleau","Dorianne Caron","Jérémy Billette","Charles Fisette","Sarah Duquette","Émile Foster","Miakym zaragoza","Léo Grenier"],
+    vert:["Éliane Bériault","Bastien Munger","mathilde cantin","Félix Martineau","Charles Germain","Lucas St-Pierre","Loane Bourque","floralie huard","Simon Bujold"],
+    bleu:["Justin Allen","Félix Bordeleau","Edmond Cloutier","Louis Genois","Rosalie Lachance","Grégoire Paradis","Hubert Larivière","Louis-Thomas Des Rochers","Mykaëla Fiset"],
+    jaune:["Léana Soucy","Paul Cloutier","Éliot Bélanger","Anne-Sophie Gouin","Malik Mercier","Félix Pouliot","Maxime Turcotte","Liam Brière","Maya Nourcy"]
+  }
 };
-const ROSTERS={S1:BASE_ROSTERS,S2:BASE_ROSTERS,S345:BASE_ROSTERS};
 
 const SCHOOL_START="2026-08-31";
 const SCHOOL_END="2027-06-23";
@@ -40,7 +47,7 @@ let cloudHash="";
 const $=id=>document.getElementById(id);
 const els={datePicker:$("datePicker"),dayHero:$("dayHero"),scheduleArea:$("scheduleArea"),rankingList:$("rankingList"),syncPill:$("syncPill"),syncText:$("syncText"),modal:$("rosterModal"),rosterColor:$("rosterColor"),rosterLevel:$("rosterLevel"),rosterTitle:$("rosterTitle"),rosterList:$("rosterList")};
 
-function getLevel(day){if(day===2||day===6)return"S1";if(day===3||day===7)return"S2";if(day===4||day===8)return"S345";return null}
+function getLevel(day){if(day===2||day===6)return"S12";if(day===5||day===8)return"S345";return null}
 function schoolInfo(iso){
   const d=parseDate(iso),start=parseDate(SCHOOL_START),end=parseDate(SCHOOL_END);
   if(d<start||d>end)return{isSchoolDay:false,reason:"Hors de l’année scolaire"};
@@ -96,16 +103,17 @@ function pointsFor(r){
   TEAM_ORDER.forEach(t=>{const b=r?.bonuses?.[t]||{};s[t].bonusPoints=["attendance","shirts","spirit"].filter(k=>!!b[k]).length;s[t].total=s[t].matchPoints+s[t].bonusPoints});
   return s;
 }
+function canonicalLevel(level){return level==="S1"||level==="S2"?"S12":level}
 function aggregate(filter){
   const a=Object.fromEntries(TEAM_ORDER.map(t=>[t,{matches:0,wins:0,draws:0,losses:0,matchPoints:0,bonusPoints:0,total:0}]));
-  Object.values(combinedRecords()).forEach(r=>{if(!daySubmitted(r))return;if(filter!=="all"&&r.level!==filter)return;const p=pointsFor(r);TEAM_ORDER.forEach(t=>Object.keys(a[t]).forEach(k=>a[t][k]+=p[t][k]))});
+  Object.values(combinedRecords()).forEach(r=>{if(!daySubmitted(r))return;if(filter!=="all"&&canonicalLevel(r.level)!==filter)return;const p=pointsFor(r);TEAM_ORDER.forEach(t=>Object.keys(a[t]).forEach(k=>a[t][k]+=p[t][k]))});
   return a;
 }
 
 function renderSchedule(){
   const info=schoolInfo(selectedDate),dateLabel=pretty(selectedDate);
   if(!info.isSchoolDay){els.dayHero.innerHTML=`<div class="badges"><span class="badge">—</span></div><h2>Aucune compétition</h2><p>${esc(dateLabel)} · ${esc(info.reason||"Aucun cours")}</p>`;els.scheduleArea.innerHTML=`<div class="empty">Il n’y a pas de compétition à cette date.</div>`;return}
-  if(!info.level){els.dayHero.innerHTML=`<div class="badges"><span class="badge">Jour ${info.cycleDay}</span></div><h2>Aucune compétition aujourd’hui</h2><p>${esc(dateLabel)} · Compétitions aux jours 2, 3, 4, 6, 7 et 8.</p>`;els.scheduleArea.innerHTML=`<div class="empty">Choisis une autre date pour voir l’horaire.</div>`;return}
+  if(!info.level){els.dayHero.innerHTML=`<div class="badges"><span class="badge">Jour ${info.cycleDay}</span></div><h2>Aucune compétition aujourd’hui</h2><p>${esc(dateLabel)} · Secondaire 1-2 aux jours 2 et 6 · Secondaire 3-4-5 aux jours 5 et 8.</p>`;els.scheduleArea.innerHTML=`<div class="empty">Choisis une autre date pour voir l’horaire.</div>`;return}
   const r=recordFor(selectedDate,info.level),official=daySubmitted(r);
   els.dayHero.innerHTML=`<div class="badges"><span class="badge">Jour ${info.cycleDay}</span><span class="badge">${esc(LEVELS[info.level])}</span></div><h2>Horaire des matchs</h2><p>${esc(dateLabel)} · 11 h 30 à midi${official?" · Résultats officiels disponibles":""}</p>`;
   els.scheduleArea.innerHTML=`<div class="schedule-head"><div><p>HORAIRE</p><h3>6 matchs</h3></div><span>Touche ton équipe pour voir la liste</span></div><div class="match-list">${DAILY_MATCHES.map(m=>{
