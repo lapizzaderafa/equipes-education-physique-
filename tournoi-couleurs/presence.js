@@ -362,6 +362,61 @@ async function savePresenceField(studentId, field, value) {
   }
 }
 
+async function saveAllPresence(checked) {
+  const info = schoolInfo(selectedDate);
+  if (!info.isSchoolDay || !info.level) return;
+  const base = recordKey(selectedDate, info.level);
+  const pKey = presenceFragmentKey(base, selectedPresenceTeam);
+  const frag = presenceSource(base, selectedPresenceTeam, selectedDate, info);
+  frag.students = frag.students || {};
+  rosterFor(info.level, selectedPresenceTeam).forEach(student => {
+    frag.students[student.id] = frag.students[student.id] || { present: false, shirt: false, motivated: false };
+    frag.students[student.id].present = checked;
+    frag.students[student.id].shirt = checked;
+    frag.students[student.id].motivated = false;
+  });
+  frag.updatedAt = Date.now();
+
+  presenceSaving = true;
+  if (cloudLive) cloudFragments[pKey] = cloneData(frag);
+  else {
+    presenceLocal[pKey] = cloneData(frag);
+    savePresenceLocal();
+  }
+  renderPresence();
+
+  try {
+    const stats = presenceStatsFromFragment(info.level, selectedPresenceTeam, frag);
+    if (cloudLive) {
+      await upsertFragment(pKey, frag);
+      const bonusKey = fragmentKey(base, "BONUS");
+      const currentRecord = getRecord(selectedDate, info.level) || blankRecord(selectedDate, info);
+      const bonusFrag = cloneData(cloudFragments[bonusKey] || makeBonusFragment(selectedDate, info, currentRecord));
+      bonusFrag.bonuses = bonusFrag.bonuses || makeBonusFragment(selectedDate, info, currentRecord).bonuses;
+      bonusFrag.bonuses[selectedPresenceTeam] = bonusFrag.bonuses[selectedPresenceTeam] || { attendance: false, shirts: false, spirit: false };
+      bonusFrag.bonuses[selectedPresenceTeam].attendance = stats.attendanceBonus;
+      bonusFrag.bonuses[selectedPresenceTeam].shirts = stats.shirtsBonus;
+      await upsertFragment(bonusKey, bonusFrag);
+      await pullCloud(true);
+    } else {
+      const r = localDB.records[base] || blankRecord(selectedDate, info);
+      r.bonuses[selectedPresenceTeam].attendance = stats.attendanceBonus;
+      r.bonuses[selectedPresenceTeam].shirts = stats.shirtsBonus;
+      localDB.records[base] = r;
+      persistLocal();
+      renderAll();
+    }
+  } catch (e) {
+    console.error(e);
+    showToast("Erreur de sauvegarde de présence");
+  } finally {
+    presenceSaving = false;
+    renderAll();
+    renderPresence();
+    applyDayMode();
+  }
+}
+
 function loadPresenceLocal() {
   try { return JSON.parse(localStorage.getItem(PRESENCE_LOCAL_KEY)) || {}; }
   catch { return {}; }
