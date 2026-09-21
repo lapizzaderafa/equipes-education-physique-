@@ -127,6 +127,25 @@
     }
     .tap-hint{position:absolute;left:16px;bottom:18px;font-size:13px;font-weight:800;opacity:.68}
 
+    /* HORAIRE */
+    .schedule-wrap{max-width:1100px;margin:0 auto}
+    .schedule-progress{border:1px solid var(--line);background:#111720;border-radius:22px;padding:16px 18px;margin-bottom:14px}
+    .schedule-progress-top{display:flex;justify-content:space-between;gap:16px;align-items:center;font-weight:900}
+    .progress-track{height:12px;border-radius:999px;background:#222b38;overflow:hidden;margin-top:12px}
+    .progress-fill{height:100%;background:var(--good);border-radius:999px;transition:width .25s ease}
+    .schedule-list{display:grid;gap:10px}
+    .schedule-game{display:grid;grid-template-columns:54px 1fr auto 1fr auto;align-items:center;gap:12px;border:1px solid var(--line);background:#111720;border-radius:20px;padding:12px 14px;min-height:78px}
+    .schedule-game.played{opacity:.7;background:#0e141c}
+    .schedule-num{width:44px;height:44px;border-radius:14px;background:#202938;display:grid;place-items:center;font-weight:1000;color:#aeb8c7}
+    .schedule-team{display:flex;align-items:center;gap:10px;min-width:0;font-size:18px;font-weight:1000}
+    .schedule-team.right{justify-content:flex-end;text-align:right}
+    .schedule-dot{width:30px;height:30px;border-radius:10px;border:1px solid rgba(255,255,255,.18);flex:0 0 auto}
+    .schedule-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .schedule-vs{font-size:12px;font-weight:950;color:#667286;letter-spacing:.1em}
+    .schedule-action{min-width:128px;min-height:46px;border-radius:14px;border:none;background:white;color:#0b1017;font-weight:950;cursor:pointer}
+    .schedule-result{min-width:128px;text-align:center;font-size:20px;font-weight:1000}
+    .schedule-empty{border:1px dashed var(--line);border-radius:22px;padding:30px;text-align:center;color:var(--muted);font-weight:800}
+
     /* MATCH */
     .match-wrap{max-width:1280px;margin:0 auto;height:100%;display:grid;grid-template-rows:auto 1fr auto;gap:14px}
     .match-pickers{
@@ -329,7 +348,7 @@
       .rank-head > :nth-child(4),.rank-head > :nth-child(5),.rank-head > :nth-child(6),.rank-head > :nth-child(7),
       .rank-row > :nth-child(4),.rank-row > :nth-child(5),.rank-row > :nth-child(6),.rank-row > :nth-child(7){display:none}
       .rank-bottom{grid-template-columns:1fr}
-      .log-item{grid-template-columns:1fr auto 1fr}
+      .schedule-game{grid-template-columns:42px 1fr auto 1fr}.schedule-action,.schedule-result{grid-column:1/-1;width:100%}.schedule-team{font-size:15px}.schedule-dot{width:24px;height:24px;border-radius:8px}.log-item{grid-template-columns:1fr auto 1fr}
       .log-time{display:none}
     }
   </style>
@@ -340,6 +359,7 @@
     <div class="brand"><div class="brand-mark">ÉPS</div><span>Tableau d'équipes</span></div>
     <nav class="tabs">
       <button class="tab active" data-view="points">Points</button>
+      <button class="tab" data-view="schedule">Horaire</button>
       <button class="tab" data-view="match">Match</button>
       <button class="tab" data-view="ranking">Classement</button>
     </nav>
@@ -355,6 +375,19 @@
       <button id="goMatchBtn" class="ghost-btn">Lancer un match →</button>
     </div>
     <div id="pointsGrid" class="points-grid"></div>
+  </section>
+
+  <section id="scheduleView" class="view hidden">
+    <div class="section-head">
+      <div>
+        <h1>Horaire des matchs</h1>
+        <p>Chaque équipe affronte toutes les autres une fois. Choisis « Jouer » et le classement s’adapte dès que le résultat est enregistré.</p>
+      </div>
+    </div>
+    <div class="schedule-wrap">
+      <div id="scheduleProgress" class="schedule-progress"></div>
+      <div id="scheduleList" class="schedule-list"></div>
+    </div>
   </section>
 
   <section id="matchView" class="view hidden">
@@ -601,7 +634,7 @@
 
   function showView(name){
     previousView=name==="setup"?previousView:name;
-    ["points","match","ranking","setup"].forEach(function(v){
+    ["points","schedule","match","ranking","setup"].forEach(function(v){
       el(v+"View").classList.toggle("hidden",v!==name);
     });
     document.querySelectorAll(".tab").forEach(function(btn){
@@ -612,6 +645,7 @@
 
   function renderAll(){
     renderPoints();
+    renderSchedule();
     renderMatch();
     renderRanking();
   }
@@ -648,6 +682,70 @@
 
   function flashCard(card){
     card.animate([{filter:"brightness(1.45)"},{filter:"brightness(1)"}],{duration:180,easing:"ease-out"});
+  }
+
+  function schedulePairs(){
+    var pairs=[];
+    for(var i=0;i<state.teams.length;i++){
+      for(var j=i+1;j<state.teams.length;j++){
+        pairs.push({a:state.teams[i].id,b:state.teams[j].id});
+      }
+    }
+    return pairs;
+  }
+
+  function recordedForPair(a,b){
+    for(var i=0;i<state.matches.length;i++){
+      var m=state.matches[i];
+      if((m.a===a&&m.b===b)||(m.a===b&&m.b===a)) return m;
+    }
+    return null;
+  }
+
+  function renderSchedule(){
+    var list=el("scheduleList"), progress=el("scheduleProgress");
+    if(!list||!progress) return;
+    var pairs=schedulePairs();
+    var played=0;
+    pairs.forEach(function(p){if(recordedForPair(p.a,p.b)) played++;});
+    var pct=pairs.length?Math.round((played/pairs.length)*100):0;
+    progress.innerHTML='<div class="schedule-progress-top"><span>'+played+' / '+pairs.length+' matchs joués</span><span>'+pct+' %</span></div><div class="progress-track"><div class="progress-fill" style="width:'+pct+'%"></div></div>';
+    list.innerHTML="";
+    if(!pairs.length){
+      list.innerHTML='<div class="schedule-empty">Il faut au moins 2 équipes pour créer l’horaire.</div>';
+      return;
+    }
+    pairs.forEach(function(p,index){
+      var a=teamById(p.a),b=teamById(p.b);
+      if(!a||!b) return;
+      var ca=getColor(a.colorId),cb=getColor(b.colorId);
+      var done=recordedForPair(p.a,p.b);
+      var row=document.createElement("div");
+      row.className="schedule-game"+(done?" played":"");
+      var resultHtml;
+      if(done){
+        var sa=safeInt(done.scoreA),sb=safeInt(done.scoreB);
+        if(done.a===p.a) resultHtml='<div class="schedule-result">✓ '+sa+' — '+sb+'</div>';
+        else resultHtml='<div class="schedule-result">✓ '+sb+' — '+sa+'</div>';
+      }else{
+        resultHtml='<button class="schedule-action">Jouer →</button>';
+      }
+      row.innerHTML=
+        '<div class="schedule-num">'+(index+1)+'</div>'+
+        '<div class="schedule-team"><div class="schedule-dot" style="background:'+ca.hex+'"></div><div class="schedule-name">'+escapeHtml(a.name)+'</div></div>'+
+        '<div class="schedule-vs">VS</div>'+
+        '<div class="schedule-team right"><div class="schedule-name">'+escapeHtml(b.name)+'</div><div class="schedule-dot" style="background:'+cb.hex+'"></div></div>'+
+        resultHtml;
+      if(!done){
+        row.querySelector(".schedule-action").addEventListener("click",function(){
+          stopClock();
+          state.match.a=p.a;state.match.b=p.b;
+          state.match.scoreA=0;state.match.scoreB=0;state.match.elapsed=0;state.match.startedAt=null;state.match.running=false;
+          save();showView("match");
+        });
+      }
+      list.appendChild(row);
+    });
   }
 
   function renderMatch(){
@@ -786,7 +884,7 @@
 
     state.match.scoreA=0;state.match.scoreB=0;state.match.elapsed=0;state.match.startedAt=null;state.match.running=false;
     el("resultModal").classList.add("hidden");
-    save();renderAll();showView("ranking");
+    save();renderAll();showView("schedule");
   }
 
   function sortedTeams(){
