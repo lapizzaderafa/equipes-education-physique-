@@ -41,6 +41,10 @@
     const frag = presenceSource(base, selectedPresenceTeam, selectedDate, info);
     const roster = rosterFor(info.level, selectedPresenceTeam);
     const stats = presenceStatsFromFragment(info.level, selectedPresenceTeam, frag);
+    const allChecked = roster.length > 0 && roster.every(student => {
+      const state = frag.students?.[student.id];
+      return state?.present && state?.shirt && !state?.motivated;
+    });
 
     area.innerHTML = `
       <div class="presence-simple-teams" style="grid-template-columns:repeat(${allowedTeams.length},minmax(0,1fr))">
@@ -48,6 +52,11 @@
       </div>
 
       <div class="presence-simple-note"><strong>${stats.present}/${stats.eligible} présents · ${stats.percent}%</strong><span>${stats.motivated} absence${stats.motivated === 1 ? "" : "s"} motivée${stats.motivated === 1 ? "" : "s"}, retirée${stats.motivated === 1 ? "" : "s"} du calcul</span></div>
+
+      <label class="presence-check-all">
+        <input type="checkbox" data-check-all ${allChecked ? "checked" : ""}>
+        <span><b>Tout cocher</b><small>Présence et chandail pour toute l’équipe</small></span>
+      </label>
 
       <div class="presence-simple-list">
         <div class="presence-simple-head">
@@ -86,6 +95,9 @@
 
     area.querySelectorAll("input[data-student]").forEach(input => {
       input.addEventListener("change", () => savePresenceField(input.dataset.student, input.dataset.field, input.checked));
+    });
+    area.querySelector("[data-check-all]")?.addEventListener("change", event => {
+      saveAllPresence(event.currentTarget.checked);
     });
   };
 
