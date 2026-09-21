@@ -40,20 +40,24 @@
     const base = recordKey(selectedDate, info.level);
     const frag = presenceSource(base, selectedPresenceTeam, selectedDate, info);
     const roster = rosterFor(info.level, selectedPresenceTeam);
+    const stats = presenceStatsFromFragment(info.level, selectedPresenceTeam, frag);
 
     area.innerHTML = `
       <div class="presence-simple-teams" style="grid-template-columns:repeat(${allowedTeams.length},minmax(0,1fr))">
         ${allowedTeams.map(team => `<button type="button" class="presence-simple-team team-${team} ${team === selectedPresenceTeam ? "active" : ""}" data-presence-team="${team}">${TEAMS[team].label}</button>`).join("")}
       </div>
 
+      <div class="presence-simple-note"><strong>${stats.present}/${stats.eligible} présents · ${stats.percent}%</strong><span>${stats.motivated} absence${stats.motivated === 1 ? "" : "s"} motivée${stats.motivated === 1 ? "" : "s"}, retirée${stats.motivated === 1 ? "" : "s"} du calcul</span></div>
+
       <div class="presence-simple-list">
         <div class="presence-simple-head">
           <span>Élève</span>
           <span>Présent</span>
           <span>Chandail</span>
+          <span>Motivé</span>
         </div>
         ${roster.map(student => {
-          const state = frag.students?.[student.id] || { present: false, shirt: false };
+          const state = frag.students?.[student.id] || { present: false, shirt: false, motivated: false };
           return `
             <div class="presence-simple-row">
               <span class="presence-simple-name">${esc(student.name)}</span>
@@ -63,6 +67,10 @@
               </label>
               <label class="presence-simple-check shirt" aria-label="${esc(student.name)} chandail">
                 <input type="checkbox" data-student="${student.id}" data-field="shirt" ${state.shirt ? "checked" : ""} ${state.present ? "" : "disabled"}>
+                <span></span>
+              </label>
+              <label class="presence-simple-check motivated" aria-label="${esc(student.name)} absence motivée">
+                <input type="checkbox" data-student="${student.id}" data-field="motivated" ${state.motivated ? "checked" : ""}>
                 <span></span>
               </label>
             </div>`;
