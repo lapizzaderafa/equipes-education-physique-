@@ -1,9 +1,123 @@
 const PRESENCE_LOCAL_KEY = "tournoi-presence-local-v2";
-const PRESENCE_TEST_ROSTERS = {
-  rouge: ["Alexis Martin","Émile Roy","Nathan Gagnon","Thomas Bouchard","Léo Fortin","Olivier Côté","Félix Tremblay","Charles Pelletier","Jacob Morin","Antoine Lavoie"],
-  vert: ["Samuel Girard","Louis Bergeron","Noah Bélanger","Gabriel Gauthier","William Caron","Henri Beaulieu","Mathis Lévesque","Raphaël Cloutier","Elliot Dufour","Jules Parent"],
-  bleu: ["Milan Dubois","Xavier Fournier","Arthur Renaud","Édouard Simard","Logan Poirier","Victor Lapointe","Malik Desjardins","Nolan Landry","Théo Hébert","Mathieu Ouellet"],
-  jaune: ["Benjamin Mercier","Zachary Lemieux","Adam Nadeau","Tristan Proulx","Éli Paquette","Maxime Bédard","Lucas Turcotte","Alec Richard","Dylan Charest","Mikaël Savard"]
+const PRESENCE_ROSTERS = {
+  "S12": {
+    "rouge": [
+      "Clara Belzile",
+      "Alice Grenier",
+      "Ariane Bélanger",
+      "Ève Briand",
+      "Maxim Drouin",
+      "Henri Foster",
+      "Jules Larivière",
+      "Mya Larouche",
+      "Lya Marceau",
+      "Arnaud Néron",
+      "Manda Ramanandraibe Hiaro",
+      "Edouard Sirois",
+      "Victor Tanguay",
+      "Cassandra Fiset",
+      "Laïla Tanguay"
+    ],
+    "vert": [
+      "Thierry Bellavance",
+      "Sarah-Maude Fortin",
+      "Camille moore",
+      "Florence Giguère",
+      "Alexandre Germain",
+      "lexie labrecque",
+      "Jérémy Letellier",
+      "Jeanne Paradis",
+      "Florence Roux",
+      "jacob talbot",
+      "Koralie Dion",
+      "Alycia Marcil",
+      "Jade Roberge",
+      "Maxime Mercier",
+      "Laurence Julien",
+      "Thomas Mercier"
+    ],
+    "bleu": [
+      "Alfred Elliot Anctil",
+      "Martin Coronel",
+      "Éliane Dubé",
+      "Éliam Fournier",
+      "Rosalie Julien",
+      "Justine Lasalle",
+      "léonie martel",
+      "Mélodie Otis-Dubé",
+      "Émilia roger",
+      "Flavie St-Laurent",
+      "Léo Jason Andriamboavonjy",
+      "Maryane Lachance",
+      "Viktoriia Lisnycha",
+      "Ariane Bolduc",
+      "Mehdi Chachia Plamondon"
+    ],
+    "jaune": [
+      "Emy-Anne Côté",
+      "Arsène Mvondo Wong",
+      "Baptiste Autret",
+      "Estée Bouchard",
+      "Tyfany Russel",
+      "Anais Fortin",
+      "Zara Grimard",
+      "Matthew Lajeunesse",
+      "Chloé Mainguy",
+      "Tasnim Naouali",
+      "Jeanne Polisois",
+      "julien vallières",
+      "Dominic Dionne",
+      "Josianne Dolet",
+      "charles-olivier seaborn"
+    ]
+  },
+  "S345": {
+    "rouge": [
+      "Tom Arsenault",
+      "Simone Beaudin",
+      "Zackary Pleau",
+      "Dorianne Caron",
+      "Jérémy Billette",
+      "Charles Fisette",
+      "Sarah Duquette",
+      "Émile Foster",
+      "Miakym zaragoza",
+      "Léo Grenier"
+    ],
+    "vert": [
+      "Éliane Bériault",
+      "Bastien Munger",
+      "mathilde cantin",
+      "Félix Martineau",
+      "Charles Germain",
+      "Lucas St-Pierre",
+      "Loane Bourque",
+      "floralie huard",
+      "Simon Bujold"
+    ],
+    "bleu": [
+      "Justin Allen",
+      "Félix Bordeleau",
+      "Edmond Cloutier",
+      "Louis Genois",
+      "Rosalie Lachance",
+      "Grégoire Paradis",
+      "Hubert Larivière",
+      "Louis-Thomas Des Rochers",
+      "Mykaëla Fiset"
+    ],
+    "jaune": [
+      "Léana Soucy",
+      "Paul Cloutier",
+      "Éliot Bélanger",
+      "Anne-Sophie Gouin",
+      "Malik Mercier",
+      "Félix Pouliot",
+      "Maxime Turcotte",
+      "Liam Brière",
+      "Maya Nourcy"
+    ]
+  }
 };
 
 let presenceLocal = loadPresenceLocal();
@@ -16,8 +130,9 @@ function presenceFragmentKey(base, team) {
 }
 
 function rosterFor(level, team) {
-  return (PRESENCE_TEST_ROSTERS[team] || []).map((name, index) => ({
-    id: `${level || "X"}-${team}-${index + 1}`,
+  const canonical = canonicalLevel(level);
+  return (PRESENCE_ROSTERS[canonical]?.[team] || []).map((name, index) => ({
+    id: `${canonical || "X"}-${team}-${index + 1}`,
     name
   }));
 }
