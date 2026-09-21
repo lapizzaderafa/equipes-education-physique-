@@ -16,7 +16,7 @@ const TEAMS = {
   jaune: { label: "Jaune" }
 };
 const TEAM_ORDER = ["rouge", "vert", "bleu", "jaune"];
-const LEVELS = { S1: "Secondaire 1", S2: "Secondaire 2", S345: "Secondaire 3-4-5" };
+const LEVELS = { S12: "Secondaire 1-2", S345: "Secondaire 3-4-5", S1: "Secondaire 1-2", S2: "Secondaire 1-2" };
 const DAILY_MATCHES = [
   { id: 1, slot: 1, time: "11 h 30 – 11 h 40", gym: "A", a: "rouge", b: "vert" },
   { id: 2, slot: 1, time: "11 h 30 – 11 h 40", gym: "B", a: "bleu", b: "jaune" },
@@ -216,9 +216,12 @@ function shiftDate(n) {
   setDate(fmt(d));
 }
 
+function canonicalLevel(level) {
+  return level === "S1" || level === "S2" ? "S12" : level;
+}
+
 function getLevel(day) {
-  if (day === 2 || day === 6) return "S1";
-  if (day === 3 || day === 7) return "S2";
-  if (day === 4 || day === 8) return "S345";
+  if (day === 2 || day === 6) return "S12";
+  if (day === 5 || day === 8) return "S345";
   return null;
 }
