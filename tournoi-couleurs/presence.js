@@ -139,7 +139,7 @@ function rosterFor(level, team) {
 
 function blankPresenceFragment(date, info, team) {
   const students = Object.fromEntries(
-    rosterFor(info.level, team).map(s => [s.id, { present: false, shirt: false }])
+    rosterFor(info.level, team).map(s => [s.id, { present: false, shirt: false, motivated: false }])
   );
   return { date, cycleDay: info.cycleDay, level: info.level, team, students };
 }
@@ -154,21 +154,26 @@ function presenceStatsFromFragment(level, team, frag) {
   const roster = rosterFor(level, team);
   let present = 0;
   let shirts = 0;
+  let motivated = 0;
   roster.forEach(student => {
-    const state = frag.students?.[student.id] || { present: false, shirt: false };
+    const state = frag.students?.[student.id] || { present: false, shirt: false, motivated: false };
+    if (state.motivated) motivated++;
     if (state.present) {
       present++;
       if (state.shirt) shirts++;
     }
   });
   const total = roster.length;
-  const percent = total ? Math.round((present / total) * 100) : 0;
+  const eligible = Math.max(0, total - motivated);
+  const percent = eligible ? Math.round((present / eligible) * 100) : 100;
   return {
     total,
+    eligible,
     present,
     shirts,
+    motivated,
     percent,
-    attendanceBonus: total > 0 && present / total >= 0.8,
+    attendanceBonus: total > 0 && (eligible === 0 || present / eligible >= 0.8),
     shirtsBonus: present > 0 && shirts === present
   };
 }
@@ -270,21 +275,21 @@ function renderPresence() {
     <div class="presence-summary-grid">
       ${TEAM_ORDER.map(team => {
         const s = presenceStats(selectedDate, info.level, team);
-        return `<article class="presence-summary"><strong>${TEAMS[team].label}</strong><small>${s.present}/${s.total} présents · ${s.percent}%</small><div class="auto-points"><span class="auto-badge ${s.attendanceBonus ? "on" : ""}">${s.attendanceBonus ? "✓" : "○"} Présence</span><span class="auto-badge ${s.shirtsBonus ? "on" : ""}">${s.shirtsBonus ? "✓" : "○"} Chandail</span></div></article>`;
+        return `<article class="presence-summary"><strong>${TEAMS[team].label}</strong><small>${s.present}/${s.eligible} présents · ${s.percent}% · ${s.motivated} motivé${s.motivated === 1 ? "" : "s"}</small><div class="auto-points"><span class="auto-badge ${s.attendanceBonus ? "on" : ""}">${s.attendanceBonus ? "✓" : "○"} Présence</span><span class="auto-badge ${s.shirtsBonus ? "on" : ""}">${s.shirtsBonus ? "✓" : "○"} Chandail</span></div></article>`;
       }).join("")}
     </div>
     <div class="presence-team-tabs">
       ${TEAM_ORDER.map(team => `<button type="button" class="presence-team-tab team-${team} ${team === selectedPresenceTeam ? "active" : ""}" data-presence-team="${team}">${TEAMS[team].label}</button>`).join("")}
     </div>
     <div class="presence-scorebar">
-      <div class="presence-scorebox ${selectedStats.attendanceBonus ? "good" : ""}"><strong>${selectedStats.present}/${selectedStats.total}</strong><span>${selectedStats.percent}% présents ${selectedStats.attendanceBonus ? "· +1 point" : "· objectif 80 %"}</span></div>
+      <div class="presence-scorebox ${selectedStats.attendanceBonus ? "good" : ""}"><strong>${selectedStats.present}/${selectedStats.eligible}</strong><span>${selectedStats.percent}% présents · ${selectedStats.motivated} motivé${selectedStats.motivated === 1 ? "" : "s"} ${selectedStats.attendanceBonus ? "· +1 point" : "· objectif 80 %"}</span></div>
       <div class="presence-scorebox ${selectedStats.shirtsBonus ? "good" : ""}"><strong>${selectedStats.shirts}/${selectedStats.present || 0}</strong><span>chandails parmi les présents ${selectedStats.shirtsBonus ? "· +1 point" : ""}</span></div>
     </div>
     <article class="presence-card">
-      <div class="presence-card-head"><span>Élève</span><span>Présent</span><span>Chandail</span></div>
+      <div class="presence-card-head"><span>Élève</span><span>Présent</span><span>Chandail</span><span>Motivé</span></div>
       ${selectedRoster.map(student => {
-        const state = selectedFrag.students?.[student.id] || { present: false, shirt: false };
-        return `<div class="student-row"><div class="student-name">${esc(student.name)}</div><label class="student-check"><input type="checkbox" data-student="${student.id}" data-field="present" ${state.present ? "checked" : ""}><span>${state.present ? "Oui" : "Non"}</span></label><label class="student-check shirt"><input type="checkbox" data-student="${student.id}" data-field="shirt" ${state.shirt ? "checked" : ""} ${state.present ? "" : "disabled"}><span>${state.shirt ? "Oui" : "Non"}</span></label></div>`;
+        const state = selectedFrag.students?.[student.id] || { present: false, shirt: false, motivated: false };
+        return `<div class="student-row"><div class="student-name">${esc(student.name)}</div><label class="student-check"><input type="checkbox" data-student="${student.id}" data-field="present" ${state.present ? "checked" : ""}><span>${state.present ? "Oui" : "Non"}</span></label><label class="student-check shirt"><input type="checkbox" data-student="${student.id}" data-field="shirt" ${state.shirt ? "checked" : ""} ${state.present ? "" : "disabled"}><span>${state.shirt ? "Oui" : "Non"}</span></label><label class="student-check motivated"><input type="checkbox" data-student="${student.id}" data-field="motivated" ${state.motivated ? "checked" : ""}><span>${state.motivated ? "Oui" : "Non"}</span></label></div>`;
       }).join("")}
     </article>
     <div class="presence-saving">● ${presenceSaving ? "Sauvegarde…" : (cloudLive ? "Synchronisé en direct" : "Sauvegarde locale")}</div>`;
@@ -307,9 +312,14 @@ async function savePresenceField(studentId, field, value) {
   const pKey = presenceFragmentKey(base, selectedPresenceTeam);
   const frag = presenceSource(base, selectedPresenceTeam, selectedDate, info);
   frag.students = frag.students || {};
-  frag.students[studentId] = frag.students[studentId] || { present: false, shirt: false };
+  frag.students[studentId] = frag.students[studentId] || { present: false, shirt: false, motivated: false };
   frag.students[studentId][field] = value;
   if (field === "present" && !value) frag.students[studentId].shirt = false;
+  if (field === "present" && value) frag.students[studentId].motivated = false;
+  if (field === "motivated" && value) {
+    frag.students[studentId].present = false;
+    frag.students[studentId].shirt = false;
+  }
   frag.updatedAt = Date.now();
 
   presenceSaving = true;
