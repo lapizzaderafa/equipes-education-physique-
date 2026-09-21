@@ -51,6 +51,7 @@ function blankRecord(date, info) {
 
 function normalizeRecord(r) {
   if (!r) return r;
+  r.level = canonicalLevel(r.level);
   if (!r.gymSubmissions || typeof r.gymSubmissions !== "object") {
     const oldSubmitted = r.submitted === true;
     r.gymSubmissions = { A: oldSubmitted, B: oldSubmitted };
@@ -76,7 +77,7 @@ function combinedCloudRecords() {
     const bonus = cloudFragments[fragmentKey(base, "BONUS")];
     const seed = a || b || bonus || {};
     const date = seed.date || base.slice(0, 10);
-    const level = seed.level || base.slice(11);
+    const level = canonicalLevel(seed.level || base.slice(11));
     const info = schoolInfo(date);
     const r = blankRecord(date, {
       cycleDay: seed.cycleDay || info.cycleDay,
@@ -155,7 +156,7 @@ async function renderToday() {
   }
   if (!info.level) {
     els.competitionArea.hidden = true;
-    els.dayStatus.innerHTML = `<div class="big-day"><span class="cycle-badge">Jour ${info.cycleDay}</span></div><h2>Aucune compétition aujourd’hui</h2><p>${esc(dateLabel)} · Compétitions aux jours 2, 3, 4, 6, 7 et 8.</p>`;
+    els.dayStatus.innerHTML = `<div class="big-day"><span class="cycle-badge">Jour ${info.cycleDay}</span></div><h2>Aucune compétition aujourd’hui</h2><p>${esc(dateLabel)} · Compétitions aux jours 2, 5, 6 et 8.</p>`;
     return;
   }
 
