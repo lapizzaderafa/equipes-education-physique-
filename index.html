@@ -358,15 +358,13 @@
   <header id="topbar" class="topbar">
     <div class="brand"><div class="brand-mark">ÉPS</div><span>Tableau d'équipes</span></div>
     <nav class="tabs">
-      <button class="tab active" data-view="points">Points</button>
-      <button class="tab" data-view="schedule">Horaire</button>
-      <button class="tab" data-view="match">Match</button>
+      <button class="tab active" data-view="schedule">Horaire</button>
       <button class="tab" data-view="ranking">Classement</button>
     </nav>
     <button id="settingsBtn" class="settings-btn">⚙ Équipes</button>
   </header>
 
-  <section id="pointsView" class="view">
+  <section id="pointsView" class="view hidden">
     <div class="section-head">
       <div>
         <h1>Points des équipes</h1>
@@ -381,7 +379,7 @@
     <div class="section-head">
       <div>
         <h1>Horaire des matchs</h1>
-        <p>Chaque équipe affronte toutes les autres une fois. Choisis « Jouer » et le classement s’adapte dès que le résultat est enregistré.</p>
+        <p>Chaque équipe affronte toutes les autres une fois. L’ordre est optimisé pour limiter les longues pauses. Lance une partie, entre le pointage en direct, puis le classement s’adapte automatiquement.</p>
       </div>
     </div>
     <div class="schedule-wrap">
@@ -392,7 +390,7 @@
 
   <section id="matchView" class="view hidden">
     <div class="match-wrap">
-      <div id="matchPickers" class="match-pickers">
+      <div id="matchPickers" class="match-pickers hidden">
         <div class="picker-block">
           <div class="picker-title">Équipe A</div>
           <div id="chipsA" class="chips"></div>
@@ -682,13 +680,80 @@
   }
 
   function schedulePairs(){
-    var pairs=[];
-    for(var i=0;i<state.teams.length;i++){
-      for(var j=i+1;j<state.teams.length;j++){
-        pairs.push({a:state.teams[i].id,b:state.teams[j].id});
+    var n=state.teams.length;
+    var all=[];
+    for(var i=0;i<n;i++){
+      for(var j=i+1;j<n;j++){
+        all.push({a:i,b:j});
       }
     }
-    return pairs;
+    if(all.length<=1){
+      return all.map(function(p){return {a:state.teams[p.a].id,b:state.teams[p.b].id};});
+    }
+
+    // Cherche un ordre complet où aucune équipe ne reste 3 matchs de suite sur le banc.
+    // Avec 2 à 5 équipes, une solution avec un maximum de 2 matchs de pause existe.
+    function build(maxBench){
+      var used=new Array(all.length).fill(false);
+      var bench=new Array(n).fill(0);
+      var order=[];
+
+      function search(depth){
+        if(depth===all.length) return order.slice();
+
+        var candidates=[];
+        for(var k=0;k<all.length;k++){
+          if(used[k]) continue;
+          var p=all[k];
+          var after=[];
+          var maxAfter=0,sumSquares=0;
+          for(var t=0;t<n;t++){
+            var v=(t===p.a||t===p.b)?0:bench[t]+1;
+            after.push(v);
+            if(v>maxAfter) maxAfter=v;
+            sumSquares+=v*v;
+          }
+          if(maxAfter>maxBench) continue;
+
+          var overlap=0;
+          if(order.length){
+            var last=order[order.length-1];
+            if(last.a===p.a||last.a===p.b) overlap++;
+            if(last.b===p.a||last.b===p.b) overlap++;
+          }
+          candidates.push({idx:k,p:p,after:after,max:maxAfter,sum:sumSquares,overlap:overlap});
+        }
+
+        candidates.sort(function(x,y){
+          if(x.max!==y.max) return x.max-y.max;
+          if(x.sum!==y.sum) return x.sum-y.sum;
+          if(x.overlap!==y.overlap) return x.overlap-y.overlap;
+          return x.idx-y.idx;
+        });
+
+        for(var q=0;q<candidates.length;q++){
+          var cand=candidates[q];
+          var previous=bench.slice();
+          used[cand.idx]=true;
+          bench=cand.after.slice();
+          order.push(cand.p);
+
+          var result=search(depth+1);
+          if(result) return result;
+
+          order.pop();
+          used[cand.idx]=false;
+          bench=previous;
+        }
+        return null;
+      }
+      return search(0);
+    }
+
+    var optimized=build(2)||build(3)||all;
+    return optimized.map(function(p){
+      return {a:state.teams[p.a].id,b:state.teams[p.b].id};
+    });
   }
 
   function recordedForPair(a,b){
@@ -725,7 +790,7 @@
         if(done.a===p.a) resultHtml='<div class="schedule-result">✓ '+sa+' — '+sb+'</div>';
         else resultHtml='<div class="schedule-result">✓ '+sb+' — '+sa+'</div>';
       }else{
-        resultHtml='<button class="schedule-action">Jouer →</button>';
+        resultHtml='<button class="schedule-action">Lancer la partie →</button>';
       }
       row.innerHTML=
         '<div class="schedule-num">'+(index+1)+'</div>'+
@@ -978,7 +1043,7 @@
 
   function currentMainView(){
     var active=document.querySelector(".tab.active");
-    return active?active.getAttribute("data-view"):"points";
+    return active?active.getAttribute("data-view"):"schedule";
   }
 
   function firstUnusedDraftColor(){
@@ -1070,7 +1135,7 @@
     state.match=normalizeMatch({});
     ensureMatchSelections();
     save();
-    showView(previousView==="setup"?"points":previousView);
+    showView(previousView==="setup"?"schedule":previousView);
   }
 
   function resetTournament(){
@@ -1094,10 +1159,10 @@
   document.querySelectorAll(".tab").forEach(function(btn){
     btn.addEventListener("click",function(){showView(btn.getAttribute("data-view"));});  });
   el("settingsBtn").addEventListener("click",openSetup);
-  el("goMatchBtn").addEventListener("click",function(){showView("match");});
+  // Le match se lance uniquement depuis l'horaire.
   el("teamCountMinus").addEventListener("click",function(){changeDraftCount(-1);});
   el("teamCountPlus").addEventListener("click",function(){changeDraftCount(1);});
-  el("cancelSetupBtn").addEventListener("click",function(){showView(previousView||"points");});
+  el("cancelSetupBtn").addEventListener("click",function(){showView(previousView||"schedule");});
   el("saveSetupBtn").addEventListener("click",saveSetup);
   el("finishMatchBtn").addEventListener("click",openResultModal);
   el("cancelResultBtn").addEventListener("click",function(){el("resultModal").classList.add("hidden");});
@@ -1117,10 +1182,10 @@
   load();
   renderAll();
   if(!state.configured){
-    previousView="points";
+    previousView="schedule";
     openSetup();
   }else{
-    showView("points");
+    showView("schedule");
   }
 })();
 </script>
