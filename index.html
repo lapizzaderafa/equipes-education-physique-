@@ -93,40 +93,6 @@
     .danger-btn{border:none;background:var(--danger);color:white}
     button:disabled{opacity:.4;cursor:not-allowed}
 
-    /* POINTS */
-    .points-grid{
-      max-width:1280px;margin:0 auto;
-      display:grid;grid-template-columns:repeat(var(--cols,5),minmax(0,1fr));
-      gap:12px;
-      min-height:calc(100% - 92px);
-    }
-    .team-card{
-      position:relative;border-radius:28px;overflow:hidden;min-height:270px;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;
-      cursor:pointer;user-select:none;
-      box-shadow:var(--shadow);
-      border:1px solid rgba(255,255,255,.14);
-      transition:transform .08s ease,filter .08s ease;
-    }
-    .team-card:active{transform:scale(.986);filter:brightness(.92)}
-    .team-card-name{
-      position:absolute;top:18px;left:18px;right:18px;
-      text-align:center;text-transform:uppercase;letter-spacing:.06em;
-      font-size:clamp(18px,2.3vw,34px);font-weight:1000;line-height:1;
-      overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-    }
-    .team-card-label{font-size:13px;font-weight:950;letter-spacing:.18em;text-transform:uppercase;opacity:.7;margin-top:22px}
-    .team-card-score{
-      font-size:clamp(92px,13vw,190px);font-weight:1000;line-height:.78;letter-spacing:-.08em;
-      font-variant-numeric:tabular-nums;
-    }
-    .minus{
-      position:absolute;right:14px;bottom:14px;width:58px;height:58px;border-radius:19px;
-      border:1px solid currentColor;background:rgba(0,0,0,.17);color:inherit;
-      font-size:34px;font-weight:950;cursor:pointer;display:grid;place-items:center;
-    }
-    .tap-hint{position:absolute;left:16px;bottom:18px;font-size:13px;font-weight:800;opacity:.68}
-
     /* HORAIRE */
     .schedule-wrap{max-width:1100px;margin:0 auto}
     .schedule-progress{border:1px solid var(--line);background:#111720;border-radius:22px;padding:16px 18px;margin-bottom:14px}
@@ -312,8 +278,6 @@
     @media(max-width:980px){
       .topbar{grid-template-columns:auto 1fr auto}
       .brand span:last-child{display:none}
-      .points-grid{grid-template-columns:repeat(2,minmax(0,1fr));min-height:auto}
-      .team-card{min-height:260px}
       .match-stage{grid-template-columns:1fr 1fr;grid-template-rows:minmax(300px,1fr) auto}
       .clock-panel{grid-column:1/-1;grid-row:2;min-height:190px}
       .clock{font-size:78px}
@@ -334,9 +298,6 @@
       .view{height:auto;min-height:calc(100dvh - 62px);padding:12px;overflow:visible}
       .section-head{align-items:flex-start}
       .section-head p{font-size:13px}
-      .points-grid{grid-template-columns:1fr}
-      .team-card{min-height:210px}
-      .team-card-score{font-size:112px}
       .setup-teams{grid-template-columns:1fr}
       .match-pickers{grid-template-columns:1fr;gap:8px}
       .versus-small{display:none}
@@ -363,17 +324,6 @@
     </nav>
     <button id="settingsBtn" class="settings-btn">⚙ Équipes</button>
   </header>
-
-  <section id="pointsView" class="view hidden">
-    <div class="section-head">
-      <div>
-        <h1>Points des équipes</h1>
-        <p>Touche une équipe pour +1. Le classement se met à jour instantanément.</p>
-      </div>
-      <button id="goMatchBtn" class="ghost-btn">Lancer un match →</button>
-    </div>
-    <div id="pointsGrid" class="points-grid"></div>
-  </section>
 
   <section id="scheduleView" class="view hidden">
     <div class="section-head">
@@ -629,7 +579,7 @@
 
   function showView(name){
     previousView=name==="setup"?previousView:name;
-    ["points","schedule","match","ranking","setup"].forEach(function(v){
+    ["schedule","match","ranking","setup"].forEach(function(v){
       el(v+"View").classList.toggle("hidden",v!==name);
     });
     document.querySelectorAll(".tab").forEach(function(btn){
@@ -639,44 +589,9 @@
   }
 
   function renderAll(){
-    renderPoints();
     renderSchedule();
     renderMatch();
     renderRanking();
-  }
-
-  function renderPoints(){
-    var grid=el("pointsGrid");
-    if(!grid) return;
-    var cols=Math.max(1,state.teams.length);
-    grid.style.setProperty("--cols",cols);
-    grid.innerHTML="";
-    state.teams.forEach(function(t){
-      var c=getColor(t.colorId);
-      var card=document.createElement("div");
-      card.className="team-card";
-      card.style.background="linear-gradient(145deg,"+c.hex+",color-mix(in srgb, "+c.hex+" 72%, #000 28%))";
-      card.style.color=c.text;
-      card.innerHTML=
-        '<div class="team-card-name">'+escapeHtml(t.name)+'</div>'+
-        '<div class="team-card-label">Points</div>'+
-        '<div class="team-card-score">'+t.points+'</div>'+
-        '<div class="tap-hint">Touchez pour +1</div>'+
-        '<button class="minus" aria-label="Retirer un point">−</button>';
-      card.addEventListener("click",function(evt){
-        if(evt.target.closest(".minus")) return;
-        t.points+=1;save();renderPoints();renderRanking();flashCard(card);
-      });
-      card.querySelector(".minus").addEventListener("click",function(evt){
-        evt.stopPropagation();
-        t.points=Math.max(0,t.points-1);save();renderPoints();renderRanking();
-      });
-      grid.appendChild(card);
-    });
-  }
-
-  function flashCard(card){
-    card.animate([{filter:"brightness(1.45)"},{filter:"brightness(1)"}],{duration:180,easing:"ease-out"});
   }
 
   function schedulePairs(){
