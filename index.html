@@ -491,8 +491,9 @@
 
 <script>
 (function(){
-  var STORAGE_KEY = "eps-tableau-equipes-v2";
-  var LEGACY_KEY = "eps-equipes-scores";
+  // Données du tournoi isolées par onglet/session : aucun partage entre enseignants ou appareils.
+  // Elles survivent à un rafraîchissement, mais pas à une nouvelle session de navigation.
+  var STORAGE_KEY = "eps-tableau-equipes-session-v1";
 
   var COLORS = [
     {id:"blue", name:"Bleus", hex:"#2563eb", text:"#ffffff"},
@@ -542,12 +543,8 @@
   function defaultTeams(){
     var ids=["blue","white","yellow","red","green"];
     var arr=[];
-    var legacy=null;
-    try{ legacy=JSON.parse(localStorage.getItem(LEGACY_KEY)); }catch(e){}
     for(var i=0;i<5;i++){
-      var t=makeTeam(i,ids[i]);
-      if(legacy && typeof legacy==="object") t.points=safeInt(legacy[ids[i]]);
-      arr.push(t);
+      arr.push(makeTeam(i,ids[i]));
     }
     return arr;
   }
@@ -583,7 +580,7 @@
 
   function load(){
     try{
-      var saved=JSON.parse(localStorage.getItem(STORAGE_KEY));
+      var saved=JSON.parse(sessionStorage.getItem(STORAGE_KEY));
       if(saved && Array.isArray(saved.teams) && saved.teams.length){
         state.configured=true;
         state.teams=saved.teams.slice(0,5).map(normalizeTeam);
@@ -601,7 +598,7 @@
   }
 
   function save(){
-    try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }catch(e){}
+    try{ sessionStorage.setItem(STORAGE_KEY,JSON.stringify(state)); }catch(e){}
   }
 
   function teamById(id){
