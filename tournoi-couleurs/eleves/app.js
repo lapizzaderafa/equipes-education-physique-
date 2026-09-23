@@ -47,7 +47,7 @@ let cloudHash="";
 const $=id=>document.getElementById(id);
 const els={datePicker:$("datePicker"),dayHero:$("dayHero"),scheduleArea:$("scheduleArea"),rankingList:$("rankingList"),syncPill:$("syncPill"),syncText:$("syncText"),modal:$("rosterModal"),rosterColor:$("rosterColor"),rosterLevel:$("rosterLevel"),rosterTitle:$("rosterTitle"),rosterList:$("rosterList")};
 
-function getLevel(day){if(day===2||day===6)return"S12";if(day===5||day===8)return"S345";return null}
+function getLevel(day){if(day===2||day===6)return"S12";if(day===3||day===7)return"S345";return null}
 function schoolInfo(iso){
   const d=parseDate(iso),start=parseDate(SCHOOL_START),end=parseDate(SCHOOL_END);
   if(d<start||d>end)return{isSchoolDay:false,reason:"Hors de l’année scolaire"};
@@ -113,7 +113,7 @@ function aggregate(filter){
 function renderSchedule(){
   const info=schoolInfo(selectedDate),dateLabel=pretty(selectedDate);
   if(!info.isSchoolDay){els.dayHero.innerHTML=`<div class="badges"><span class="badge">—</span></div><h2>Aucune compétition</h2><p>${esc(dateLabel)} · ${esc(info.reason||"Aucun cours")}</p>`;els.scheduleArea.innerHTML=`<div class="empty">Il n’y a pas de compétition à cette date.</div>`;return}
-  if(!info.level){els.dayHero.innerHTML=`<div class="badges"><span class="badge">Jour ${info.cycleDay}</span></div><h2>Aucune compétition aujourd’hui</h2><p>${esc(dateLabel)} · Secondaire 1-2 aux jours 2 et 6 · Secondaire 3-4-5 aux jours 5 et 8.</p>`;els.scheduleArea.innerHTML=`<div class="empty">Choisis une autre date pour voir l’horaire.</div>`;return}
+  if(!info.level){els.dayHero.innerHTML=`<div class="badges"><span class="badge">Jour ${info.cycleDay}</span></div><h2>Aucune compétition aujourd’hui</h2><p>${esc(dateLabel)} · Secondaire 1-2 aux jours 2 et 6 · Secondaire 3-4-5 aux jours 3 et 7.</p>`;els.scheduleArea.innerHTML=`<div class="empty">Choisis une autre date pour voir l’horaire.</div>`;return}
   const r=recordFor(selectedDate,info.level),official=daySubmitted(r);
   els.dayHero.innerHTML=`<div class="badges"><span class="badge">Jour ${info.cycleDay}</span><span class="badge">${esc(LEVELS[info.level])}</span></div><h2>Horaire des matchs</h2><p>${esc(dateLabel)} · 11 h 30 à midi${official?" · Résultats officiels disponibles":""}</p>`;
   els.scheduleArea.innerHTML=`<div class="schedule-head"><div><p>HORAIRE</p><h3>6 matchs</h3></div><span>Touche ton équipe pour voir la liste</span></div><div class="match-list">${DAILY_MATCHES.map(m=>{

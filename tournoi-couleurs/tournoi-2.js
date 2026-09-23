@@ -156,7 +156,7 @@ async function renderToday() {
   }
   if (!info.level) {
     els.competitionArea.hidden = true;
-    els.dayStatus.innerHTML = `<div class="big-day"><span class="cycle-badge">Jour ${info.cycleDay}</span></div><h2>Aucune compétition aujourd’hui</h2><p>${esc(dateLabel)} · Compétitions aux jours 2, 5, 6 et 8.</p>`;
+    els.dayStatus.innerHTML = `<div class="big-day"><span class="cycle-badge">Jour ${info.cycleDay}</span></div><h2>Aucune compétition aujourd’hui</h2><p>${esc(dateLabel)} · Compétitions aux jours 2, 3, 6 et 7.</p>`;
     return;
   }
 
