@@ -13,7 +13,7 @@
     if (!r || !daySubmitted(r)) return;
 
     els.submitCard.className = "submit-card submitted";
-    els.submitCard.innerHTML = `<div class="submit-top"><h3>Journée validée ✓</h3><span class="progress-pill complete">Mode correction</span></div><p>Cette journée reste officielle. Tu peux modifier les résultats, l’esprit d’équipe ou les présences en tout temps; le classement sera recalculé automatiquement.</p>`;
+    els.submitCard.innerHTML = `<div class="submit-top"><h3>Journée validée ✓</h3><span class="progress-pill complete">Mode correction</span></div><p>Cette journée reste officielle. Tu peux modifier les résultats, l’esprit d’équipe ou les présences; les changements restent privés sur cet appareil jusqu’à leur enregistrement.</p>`;
   };
 
   const previousRenderAll = renderAll;
