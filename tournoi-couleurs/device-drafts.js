@@ -1,6 +1,6 @@
 /* Referee edits stay on this device until explicit submission. */
 (function () {
-  const KEY = 'typhon-device-drafts-v1';
+  const KEY = 'typhon-device-drafts-v2';
   let drafts;
   try { drafts = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch { drafts = {}; }
   let saving = false;
