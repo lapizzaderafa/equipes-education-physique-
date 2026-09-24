@@ -44,8 +44,15 @@
     r.gymSubmissions[draft.gym] = false;
     r.submitted = false;
     for (const [team, value] of Object.entries(draft.spirits)) r.bonuses[team].spirit = value;
-    for (const [team, frag] of Object.entries(draft.presence)) {
+
+    // Attendance + shirt bonuses must always come from the actual presence
+    // state (shared or this device's draft), never from a stale BONUS fragment.
+    const base = recordKey(date, level);
+    const effectiveInfo = { ...schoolInfo(date), level };
+    for (const team of TEAM_ORDER) {
+      const frag = presenceSource(base, team, date, effectiveInfo);
       const stats = presenceStatsFromFragment(level, team, frag);
+      r.bonuses[team] = r.bonuses[team] || { attendance: false, shirts: false, spirit: false };
       r.bonuses[team].attendance = stats.attendanceBonus;
       r.bonuses[team].shirts = stats.shirtsBonus;
     }
