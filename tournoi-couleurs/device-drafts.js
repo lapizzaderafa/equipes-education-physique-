@@ -38,12 +38,16 @@
   getRecord = function(date, level) {
     const shared = sharedRecord(date, level);
     const draft = drafts[draftKey(date, level, selectedGym)];
-    if (!draft) return shared;
+    if (!shared && !draft) return shared;
+
     const r = copy(shared || blankRecord(date, { ...schoolInfo(date), level }));
-    Object.assign(r.matches, copy(draft.fragment.matches));
-    r.gymSubmissions[draft.gym] = false;
-    r.submitted = false;
-    for (const [team, value] of Object.entries(draft.spirits)) r.bonuses[team].spirit = value;
+
+    if (draft) {
+      Object.assign(r.matches, copy(draft.fragment.matches));
+      r.gymSubmissions[draft.gym] = false;
+      r.submitted = false;
+      for (const [team, value] of Object.entries(draft.spirits)) r.bonuses[team].spirit = value;
+    }
 
     // Attendance + shirt bonuses must always come from the actual presence
     // state (shared or this device's draft), never from a stale BONUS fragment.
