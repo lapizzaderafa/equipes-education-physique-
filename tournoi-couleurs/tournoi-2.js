@@ -1,4 +1,5 @@
 function schoolInfo(iso) {
+  if (iso < COMPETITION_START) return { isSchoolDay: false, reason: "La Coupe Typhon commence le lundi 28 septembre" };
   const manual = localDB.overrides?.[iso];
   if (manual === "none") return { isSchoolDay: false, reason: "Aucun cours — correction manuelle" };
   if (manual && /^[1-9]$/.test(manual)) {

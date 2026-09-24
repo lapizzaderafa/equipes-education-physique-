@@ -8,6 +8,7 @@ const STORAGE_KEY = "tournoi-couleurs-v3-cloud";
 const GYM_KEY = "tournoi-gym-selection";
 const SCHOOL_START = "2026-08-31";
 const SCHOOL_END = "2027-06-23";
+const COMPETITION_START = "2026-09-28";
 
 const TEAMS = {
   rouge: { label: "Rouge" },
@@ -62,7 +63,7 @@ let localDB = loadLocal();
 let cloudFragments = {};
 let cloudHash = "";
 let cloudLive = false;
-let selectedDate = fmt(new Date());
+let selectedDate = fmt(new Date()) < COMPETITION_START ? COMPETITION_START : fmt(new Date());
 let selectedGym = localStorage.getItem(GYM_KEY) || null;
 let rankingFilter = "all";
 let toastTimer = null;

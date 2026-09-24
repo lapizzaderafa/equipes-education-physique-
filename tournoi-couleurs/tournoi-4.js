@@ -31,7 +31,7 @@ function aggregate(filter) {
   const a = Object.fromEntries(TEAM_ORDER.map(t => [t, { matches: 0, wins: 0, draws: 0, losses: 0, matchPoints: 0, bonusPoints: 0, total: 0 }]));
   Object.values(activeRecords()).forEach(raw => {
     const r = normalizeRecord(raw);
-    if (!r || !daySubmitted(r)) return;
+    if (!r || r.date < COMPETITION_START || !daySubmitted(r)) return;
     if (filter !== "all" && r.level !== filter) return;
     const p = pointsFor(r);
     TEAM_ORDER.forEach(t => Object.keys(a[t]).forEach(k => a[t][k] += p[t][k]));
@@ -47,7 +47,7 @@ function renderRanking() {
 }
 
 function renderHistory() {
-  const rs = Object.values(activeRecords()).map(normalizeRecord).filter(Boolean).sort((a, b) => b.date.localeCompare(a.date));
+  const rs = Object.values(activeRecords()).map(normalizeRecord).filter(r => r && r.date >= COMPETITION_START).sort((a, b) => b.date.localeCompare(a.date));
   if (!rs.length) {
     els.historyList.innerHTML = `<div class="empty-state"><strong>Aucune journée enregistrée</strong>Les journées apparaîtront ici dès les premiers résultats.</div>`;
     return;

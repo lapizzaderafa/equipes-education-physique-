@@ -32,6 +32,7 @@ const ROSTERS={
 
 const SCHOOL_START="2026-08-31";
 const SCHOOL_END="2027-06-23";
+const COMPETITION_START="2026-09-28";
 const fixedNoSchool=new Map();
 const addNo=(d,l)=>fixedNoSchool.set(d,l);
 function addRange(s,e,l){let d=parseDate(s),last=parseDate(e);while(d<=last){if(d.getDay()!==0&&d.getDay()!==6)addNo(fmt(d),l);d.setDate(d.getDate()+1)}}
@@ -39,16 +40,18 @@ addNo("2026-09-07","Congé");addNo("2026-10-05","Journée pédagogique");addNo("
 const floatingPed=new Map([["2026-09-25","Journée pédagogique flottante"],["2027-01-29","Journée pédagogique flottante"]]);
 const specialCycle={"2027-06-21":1,"2027-06-22":3};
 
-let selectedDate=fmt(new Date());
+let selectedDate=fmt(new Date())<COMPETITION_START?COMPETITION_START:fmt(new Date());
 let rankingFilter="all";
+let teamLevelFilter="S12";
 let cloudFragments={};
 let cloudHash="";
 
 const $=id=>document.getElementById(id);
-const els={datePicker:$("datePicker"),dayHero:$("dayHero"),scheduleArea:$("scheduleArea"),rankingList:$("rankingList"),syncPill:$("syncPill"),syncText:$("syncText"),modal:$("rosterModal"),rosterColor:$("rosterColor"),rosterLevel:$("rosterLevel"),rosterTitle:$("rosterTitle"),rosterList:$("rosterList")};
+const els={datePicker:$("datePicker"),dayHero:$("dayHero"),scheduleArea:$("scheduleArea"),rankingList:$("rankingList"),teamsList:$("teamsList"),syncPill:$("syncPill"),syncText:$("syncText"),modal:$("rosterModal"),rosterColor:$("rosterColor"),rosterLevel:$("rosterLevel"),rosterTitle:$("rosterTitle"),rosterList:$("rosterList")};
 
 function getLevel(day){if(day===2||day===7)return"S12";if(day===3||day===8)return"S345";return null}
 function schoolInfo(iso){
+  if(iso<COMPETITION_START)return{isSchoolDay:false,reason:"La Coupe Typhon commence le lundi 28 septembre"};
   const d=parseDate(iso),start=parseDate(SCHOOL_START),end=parseDate(SCHOOL_END);
   if(d<start||d>end)return{isSchoolDay:false,reason:"Hors de l’année scolaire"};
   if(d.getDay()===0||d.getDay()===6)return{isSchoolDay:false,reason:"Fin de semaine"};
@@ -106,7 +109,7 @@ function pointsFor(r){
 function canonicalLevel(level){return level==="S1"||level==="S2"?"S12":level}
 function aggregate(filter){
   const a=Object.fromEntries(TEAM_ORDER.map(t=>[t,{matches:0,wins:0,draws:0,losses:0,matchPoints:0,bonusPoints:0,total:0}]));
-  Object.values(combinedRecords()).forEach(r=>{if(!daySubmitted(r))return;if(filter!=="all"&&canonicalLevel(r.level)!==filter)return;const p=pointsFor(r);TEAM_ORDER.forEach(t=>Object.keys(a[t]).forEach(k=>a[t][k]+=p[t][k]))});
+  Object.values(combinedRecords()).forEach(r=>{if(r.date<COMPETITION_START||!daySubmitted(r))return;if(filter!=="all"&&canonicalLevel(r.level)!==filter)return;const p=pointsFor(r);TEAM_ORDER.forEach(t=>Object.keys(a[t]).forEach(k=>a[t][k]+=p[t][k]))});
   return a;
 }
 
@@ -130,6 +133,12 @@ function renderRanking(){
   const a=aggregate(rankingFilter),ranked=TEAM_ORDER.map((team,i)=>({team,i,...a[team]})).sort((x,y)=>y.total-x.total||y.matchPoints-x.matchPoints||y.wins-x.wins||x.i-y.i);
   els.rankingList.innerHTML=ranked.map((r,i)=>`<article class="rank-card"><div class="rank-pos">${i+1}</div><div class="rank-main"><div class="rank-name"><span class="dot ${TEAMS[r.team].className}"></span>${TEAMS[r.team].label}</div><div class="rank-stats">${r.matches} matchs · ${r.wins} V · ${r.draws} N · ${r.losses} D<br>${r.matchPoints} pts matchs + ${r.bonusPoints} bonus</div></div><div class="rank-total"><strong>${r.total}</strong><span>points</span></div></article>`).join("");
 }
+function renderTeams(){
+  els.teamsList.innerHTML=TEAM_ORDER.map(team=>{
+    const names=ROSTERS[teamLevelFilter]?.[team]||[];
+    return `<details class="team-roster"><summary class="team-roster-head ${TEAMS[team].className}"><strong>Équipe ${TEAMS[team].label}</strong><span>${names.length} élèves · Voir la liste</span></summary><div class="team-roster-names">${names.map((name,i)=>`<div><span>${i+1}</span>${esc(name)}</div>`).join("")||'<div>Liste à venir.</div>'}</div></details>`;
+  }).join("");
+}
 function renderAll(){renderSchedule();renderRanking()}
 
 function openRoster(level,team){
@@ -141,7 +150,7 @@ function openRoster(level,team){
   els.modal.classList.remove("hidden");
 }
 function closeRoster(){els.modal.classList.add("hidden")}
-function showView(view){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===`view-${view}`));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="ranking")renderRanking();window.scrollTo({top:0,behavior:"smooth"})}
+function showView(view){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===`view-${view}`));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="ranking")renderRanking();if(view==="teams")renderTeams();window.scrollTo({top:0,behavior:"smooth"})}
 function setDate(iso){if(!iso)return;selectedDate=iso;els.datePicker.value=iso;renderSchedule()}
 function shiftDate(n){const d=parseDate(selectedDate);d.setDate(d.getDate()+n);setDate(fmt(d))}
 function parseDate(iso){const[y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d,12)}
@@ -153,11 +162,12 @@ function bind(){
   $("prevDay").addEventListener("click",()=>shiftDate(-1));$("nextDay").addEventListener("click",()=>shiftDate(1));els.datePicker.addEventListener("change",()=>setDate(els.datePicker.value));
   document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
   document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{rankingFilter=b.dataset.filter;document.querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===b));renderRanking()}));
+  document.querySelectorAll(".team-filter").forEach(b=>b.addEventListener("click",()=>{teamLevelFilter=b.dataset.level;document.querySelectorAll(".team-filter").forEach(x=>x.classList.toggle("active",x===b));renderTeams()}));
   $("closeRoster").addEventListener("click",closeRoster);els.modal.addEventListener("click",e=>{if(e.target===els.modal)closeRoster()});document.addEventListener("keydown",e=>{if(e.key==="Escape")closeRoster()});
 }
 
 async function init(){
-  els.datePicker.value=selectedDate;bind();renderAll();
+  els.datePicker.value=selectedDate;bind();renderAll();renderTeams();
   try{await pullCloud(true);setInterval(()=>{if(document.visibilityState==="visible")pullCloud(false).catch(()=>setSync(false,"Hors ligne"))},5000)}catch(e){console.error(e);setSync(false,"Hors ligne")}
 }
 init();
