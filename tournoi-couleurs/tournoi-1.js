@@ -221,7 +221,7 @@ function canonicalLevel(level) {
 }
 
 function getLevel(day) {
-  if (day === 2 || day === 6) return "S12";
-  if (day === 3 || day === 7) return "S345";
+  if (day === 2 || day === 7) return "S12";
+  if (day === 3 || day === 8) return "S345";
   return null;
 }
