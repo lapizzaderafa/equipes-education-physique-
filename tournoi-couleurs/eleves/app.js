@@ -45,6 +45,7 @@ let rankingFilter="all";
 let teamLevelFilter="S12";
 let cloudFragments={};
 let cloudHash="";
+let cloudMetaHash="";
 
 const $=id=>document.getElementById(id);
 const els={datePicker:$("datePicker"),dayHero:$("dayHero"),scheduleArea:$("scheduleArea"),rankingList:$("rankingList"),teamsList:$("teamsList"),syncPill:$("syncPill"),syncText:$("syncText"),modal:$("rosterModal"),rosterColor:$("rosterColor"),rosterLevel:$("rosterLevel"),rosterTitle:$("rosterTitle"),rosterList:$("rosterList")};
@@ -74,10 +75,17 @@ function schoolInfo(iso){
 
 function authHeaders(){return{apikey:SUPABASE_KEY,Authorization:`Bearer ${SUPABASE_KEY}`}}
 async function pullCloud(force=false){
+  if(!force&&cloudMetaHash){
+    const checkUrl=`${REST_URL}?room_id=eq.${encodeURIComponent(ROOM_ID)}&select=record_key,updated_at&order=record_key.asc`;
+    const check=await fetch(checkUrl,{headers:authHeaders()});
+    if(!check.ok)throw new Error(await check.text());
+    if(JSON.stringify(await check.json())===cloudMetaHash){setSync(true,"En direct");return}
+  }
   const url=`${REST_URL}?room_id=eq.${encodeURIComponent(ROOM_ID)}&select=record_key,payload,updated_at&order=record_key.asc`;
   const res=await fetch(url,{headers:authHeaders()});
   if(!res.ok)throw new Error(await res.text());
   const rows=await res.json(),nextHash=JSON.stringify(rows);
+  cloudMetaHash=JSON.stringify(rows.map(({record_key,updated_at})=>({record_key,updated_at})));
   if(force||nextHash!==cloudHash){cloudHash=nextHash;cloudFragments=Object.fromEntries(rows.map(r=>[r.record_key,r.payload||{}]));renderAll()}
   setSync(true,"En direct");
 }
@@ -168,6 +176,6 @@ function bind(){
 
 async function init(){
   els.datePicker.value=selectedDate;bind();renderAll();renderTeams();
-  try{await pullCloud(true);setInterval(()=>{if(document.visibilityState==="visible")pullCloud(false).catch(()=>setSync(false,"Hors ligne"))},5000)}catch(e){console.error(e);setSync(false,"Hors ligne")}
+  try{await pullCloud(true);setInterval(()=>{if(document.visibilityState==="visible")pullCloud(false).catch(()=>setSync(false,"Hors ligne"))},30000)}catch(e){console.error(e);setSync(false,"Hors ligne")}
 }
 init();

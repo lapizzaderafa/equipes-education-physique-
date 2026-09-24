@@ -292,7 +292,7 @@ function renderPresence() {
         return `<div class="student-row"><div class="student-name">${esc(student.name)}</div><label class="student-check"><input type="checkbox" data-student="${student.id}" data-field="present" ${state.present ? "checked" : ""}><span>${state.present ? "Oui" : "Non"}</span></label><label class="student-check shirt"><input type="checkbox" data-student="${student.id}" data-field="shirt" ${state.shirt ? "checked" : ""} ${state.present ? "" : "disabled"}><span>${state.shirt ? "Oui" : "Non"}</span></label><label class="student-check motivated"><input type="checkbox" data-student="${student.id}" data-field="motivated" ${state.motivated ? "checked" : ""}><span>${state.motivated ? "Oui" : "Non"}</span></label></div>`;
       }).join("")}
     </article>
-    <div class="presence-saving">● ${presenceSaving ? "Sauvegarde…" : (cloudLive ? "Synchronisé en direct" : "Sauvegarde locale")}</div>`;
+    <div class="presence-saving">● ${presenceSaving ? "Sauvegarde…" : (cloudLive ? "Synchronisé en direct" : "Hors ligne — saisie bloquée")}</div>`;
 
   area.querySelectorAll("[data-presence-team]").forEach(btn => {
     btn.addEventListener("click", () => {
@@ -306,6 +306,7 @@ function renderPresence() {
 }
 
 async function savePresenceField(studentId, field, value) {
+  if (!requireCloud()) return;
   const info = schoolInfo(selectedDate);
   if (!info.isSchoolDay || !info.level) return;
   const base = recordKey(selectedDate, info.level);
@@ -363,6 +364,7 @@ async function savePresenceField(studentId, field, value) {
 }
 
 async function saveAllPresence(checked) {
+  if (!requireCloud()) return;
   const info = schoolInfo(selectedDate);
   if (!info.isSchoolDay || !info.level) return;
   const base = recordKey(selectedDate, info.level);

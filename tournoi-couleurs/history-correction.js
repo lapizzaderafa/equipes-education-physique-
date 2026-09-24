@@ -38,6 +38,7 @@
   };
 
   saveMatch = async function(id, result) {
+    if (!requireCloud()) return;
     const info = schoolInfo(selectedDate), base = recordKey(selectedDate, info.level);
     const r = getRecord(selectedDate, info.level) || blankRecord(selectedDate, info);
     const match = normalizedMatches(r).find(m => m.id === id);
@@ -79,6 +80,7 @@
   }
 
   saveBonus = async function(team, bonus, value) {
+    if (!requireCloud()) return;
     if (bonus === "attendance" || bonus === "shirts") {
       showToast("Ce point se calcule automatiquement avec les présences");
       return;

@@ -18,6 +18,7 @@ function renderMatches() {
 }
 
 async function saveMatch(id, result) {
+  if (!requireCloud()) return;
   const info = schoolInfo(selectedDate), base = recordKey(selectedDate, info.level);
   const r = getRecord(selectedDate, info.level) || blankRecord(selectedDate, info);
   const match = normalizedMatches(r).find(m => m.id === id);
@@ -69,6 +70,7 @@ function renderBonuses() {
 }
 
 async function saveBonus(team, bonus, value) {
+  if (!requireCloud()) return;
   const info = schoolInfo(selectedDate), base = recordKey(selectedDate, info.level);
   const r = getRecord(selectedDate, info.level) || blankRecord(selectedDate, info);
   if (daySubmitted(r)) {
@@ -158,6 +160,7 @@ function renderSubmitCard() {
 }
 
 async function submitGym() {
+  if (!requireCloud()) return;
   const info = schoolInfo(selectedDate), base = recordKey(selectedDate, info.level), gym = selectedGym;
   const r = getRecord(selectedDate, info.level);
   if (!r || gymCompletedCount(r, gym) !== 3) {

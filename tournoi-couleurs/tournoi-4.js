@@ -1,4 +1,5 @@
 async function reopenGym() {
+  if (!requireCloud()) return;
   const info = schoolInfo(selectedDate), base = recordKey(selectedDate, info.level), gym = selectedGym;
   if (!confirm(`Rouvrir le gymnase ${gym}? Ses 3 matchs pourront être corrigés. La journée sera retirée du classement général jusqu’à ce que les deux gyms soient de nouveau soumis.`)) return;
 
@@ -92,6 +93,30 @@ function resetLocal() {
   showToast("Copie locale réinitialisée");
 }
 
+async function downloadBackup() {
+  if (cloudLive) {
+    try { await pullCloud(true); } catch (error) { console.warn("Export de la dernière copie confirmée", error); }
+  }
+  let saved;
+  try { saved = JSON.parse(localStorage.getItem(BACKUP_KEY) || "null"); } catch { saved = null; }
+  if (!saved?.rows?.length && cloudLive && Object.keys(cloudFragments).length) {
+    saved = { savedAt: new Date().toISOString(), rows: Object.entries(cloudFragments).map(([record_key, payload]) => ({ record_key, payload })) };
+  }
+  if (!saved?.rows?.length) { showToast("Aucune sauvegarde confirmée disponible sur cet appareil"); return; }
+  const data = { format: "coupe-typhon-v1", exportedAt: new Date().toISOString(), lastConfirmedAt: saved.savedAt, roomId: ROOM_ID, rows: saved.rows };
+  const url = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: "application/json" }));
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `coupe-typhon-sauvegarde-${fmt(new Date())}.json`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  showToast(cloudLive ? "Sauvegarde téléchargée ✓" : "Dernière copie confirmée téléchargée (hors ligne)");
+}
+
+$("downloadBackupBtn").onclick = downloadBackup;
+
 function renderAll() {
   renderToday();
   renderRanking();
@@ -107,7 +132,7 @@ function loadLocal() {
   } catch {}
   return { records: {}, overrides: {} };
 }
-function persistLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(localDB)); }
+function persistLocal() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(localDB)); } catch (error) { console.warn("Copie locale indisponible", error); } }
 function parseDate(iso) { const [y, m, d] = iso.split("-").map(Number); return new Date(y, m - 1, d, 12); }
 function fmt(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
 function pretty(iso) { return new Intl.DateTimeFormat("fr-CA", { weekday: "long", day: "numeric", month: "long", year: "numeric" }).format(parseDate(iso)); }

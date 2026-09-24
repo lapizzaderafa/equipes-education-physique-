@@ -48,6 +48,7 @@
 <section id="view-settings" class="view">
   <div class="page-head"><p class="kicker">GESTION</p><h2>Paramètres</h2></div>
   <article class="settings-card firebase-box"><h3>Synchronisation en direct</h3><p id="firebaseStatusText">Connexion au classement partagé…</p></article>
+  <article class="settings-card"><h3>Sauvegarde des résultats</h3><p>Télécharge une copie des matchs, bonus et présences chaque semaine. Garde le fichier dans un endroit privé.</p><button id="downloadBackupBtn" class="secondary-btn" type="button">Télécharger la sauvegarde</button></article>
   <article class="settings-card"><h3>Gymnase de cette session</h3><p id="deviceGymText">Aucun gymnase choisi.</p><button id="changeGymBtn" class="secondary-btn" type="button">Changer de gymnase</button></article>
   <article class="settings-card"><h3>Correction manuelle du jour-cycle</h3><p>Utile si une fermeture ou un changement exceptionnel modifie le calendrier.</p><div class="override-form"><label><span>Date</span><input id="overrideDate" type="date"></label><label><span>Jour-cycle</span><select id="overrideCycle"><option value="">Automatique</option><option value="none">Aucun cours</option><option value="1">Jour 1</option><option value="2">Jour 2</option><option value="3">Jour 3</option><option value="4">Jour 4</option><option value="5">Jour 5</option><option value="6">Jour 6</option><option value="7">Jour 7</option><option value="8">Jour 8</option><option value="9">Jour 9</option></select></label><button id="saveOverrideBtn" class="secondary-btn" type="button">Enregistrer la correction</button></div><div id="overrideList" class="override-list"></div></article>
   <article class="settings-card danger-card"><h3>Réinitialiser les données locales</h3><p>N’efface pas le classement partagé; efface seulement les corrections locales de cet appareil.</p><button id="resetBtn" class="danger-btn" type="button">Réinitialiser la copie locale</button></article>
@@ -60,14 +61,14 @@
 <script src="./gym-refresh-reset.js?v=1"></script>
 <script src="./reset-live-2026-09-11.js?v=1"></script>
 <script src="./bootstrap.js?v=17"></script>
-<script src="./tournoi-1.js?v=21"></script>
+<script src="./tournoi-1.js?v=22"></script>
 <script src="./tournoi-2.js?v=21"></script>
-<script src="./tournoi-3.js?v=17"></script>
-<script src="./tournoi-4.js?v=18"></script>
-<script src="./presence.js?v=21"></script>
+<script src="./tournoi-3.js?v=18"></script>
+<script src="./tournoi-4.js?v=19"></script>
+<script src="./presence.js?v=22"></script>
 <script src="./bonus-lock.js?v=17"></script>
 <script src="./presence-button.js?v=17"></script>
-<script src="./history-correction.js?v=17"></script>
+<script src="./history-correction.js?v=18"></script>
 <script src="./past-submit.js?v=17"></script>
 <script src="./result-ux.js?v=17"></script>
 <script src="./presence-simple.js?v=21"></script>
