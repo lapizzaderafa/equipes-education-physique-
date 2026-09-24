@@ -17,7 +17,7 @@
     const active = !!(isPastCompetitionDate() && info.isSchoolDay && info.level && record);
     notice.hidden = !active;
     if (active) {
-      notice.innerHTML = `<strong>✎ Mode correction</strong><span>Cette journée est passée. Tu peux corriger les données; le classement se met à jour automatiquement.</span>`;
+      notice.innerHTML = `<strong>✎ Mode correction</strong><span>Cette journée est passée. Tes corrections restent sur cet appareil jusqu’à ce que tu les enregistres.</span>`;
     }
   }
 
