@@ -115,9 +115,17 @@ function pointsFor(r){
   return s;
 }
 function canonicalLevel(level){return level==="S1"||level==="S2"?"S12":level}
+function gymSubmitted(r,gym){return !!r?.gymSubmissions?.[gym]}
+function pointsForSubmittedGyms(r){
+  const s=Object.fromEntries(TEAM_ORDER.map(t=>[t,{matches:0,wins:0,draws:0,losses:0,matchPoints:0,bonusPoints:0,total:0}]));
+  normalizedMatches(r).forEach(m=>{if(!m.result||!gymSubmitted(r,m.gym))return;s[m.a].matches++;s[m.b].matches++;if(m.result==="draw"){s[m.a].draws++;s[m.b].draws++;s[m.a].matchPoints++;s[m.b].matchPoints++}else if(m.result===m.a){s[m.a].wins++;s[m.b].losses++;s[m.a].matchPoints+=2}else if(m.result===m.b){s[m.b].wins++;s[m.a].losses++;s[m.b].matchPoints+=2}});
+  const hasSubmittedGym=gymSubmitted(r,"A")||gymSubmitted(r,"B");
+  TEAM_ORDER.forEach(t=>{const b=r?.bonuses?.[t]||{};s[t].bonusPoints=hasSubmittedGym?["attendance","shirts","spirit"].filter(k=>!!b[k]).length:0;s[t].total=s[t].matchPoints+s[t].bonusPoints});
+  return s;
+}
 function aggregate(filter){
   const a=Object.fromEntries(TEAM_ORDER.map(t=>[t,{matches:0,wins:0,draws:0,losses:0,matchPoints:0,bonusPoints:0,total:0}]));
-  Object.values(combinedRecords()).forEach(r=>{if(r.date<COMPETITION_START||!daySubmitted(r))return;if(filter!=="all"&&canonicalLevel(r.level)!==filter)return;const p=pointsFor(r);TEAM_ORDER.forEach(t=>Object.keys(a[t]).forEach(k=>a[t][k]+=p[t][k]))});
+  Object.values(combinedRecords()).forEach(r=>{if(r.date<COMPETITION_START||(!gymSubmitted(r,"A")&&!gymSubmitted(r,"B")))return;if(filter!=="all"&&canonicalLevel(r.level)!==filter)return;const p=pointsForSubmittedGyms(r);TEAM_ORDER.forEach(t=>Object.keys(a[t]).forEach(k=>a[t][k]+=p[t][k]))});
   return a;
 }
 
@@ -125,10 +133,10 @@ function renderSchedule(){
   const info=schoolInfo(selectedDate),dateLabel=pretty(selectedDate);
   if(!info.isSchoolDay){els.dayHero.innerHTML=`<div class="badges"><span class="badge">—</span></div><h2>Aucune compétition</h2><p>${esc(dateLabel)} · ${esc(info.reason||"Aucun cours")}</p>`;els.scheduleArea.innerHTML=`<div class="empty">Il n’y a pas de compétition à cette date.</div>`;return}
   if(!info.level){els.dayHero.innerHTML=`<div class="badges"><span class="badge">Jour ${info.cycleDay}</span></div><h2>Aucune compétition aujourd’hui</h2><p>${esc(dateLabel)} · Secondaire 1-2 aux jours 2 et 7 · Secondaire 3-4-5 aux jours 3 et 8.</p>`;els.scheduleArea.innerHTML=`<div class="empty">Choisis une autre date pour voir l’horaire.</div>`;return}
-  const r=recordFor(selectedDate,info.level),official=daySubmitted(r);
-  els.dayHero.innerHTML=`<div class="badges"><span class="badge">Jour ${info.cycleDay}</span><span class="badge">${esc(LEVELS[info.level])}</span></div><h2>Horaire des matchs</h2><p>${esc(dateLabel)} · 11 h 30 à midi${official?" · Résultats officiels disponibles":""}</p>`;
+  const r=recordFor(selectedDate,info.level),official=daySubmitted(r),hasOfficialResults=!!(r&&(gymSubmitted(r,"A")||gymSubmitted(r,"B")));
+  els.dayHero.innerHTML=`<div class="badges"><span class="badge">Jour ${info.cycleDay}</span><span class="badge">${esc(LEVELS[info.level])}</span></div><h2>Horaire des matchs</h2><p>${esc(dateLabel)} · 11 h 30 à midi${hasOfficialResults?" · Résultats officiels disponibles":""}</p>`;
   els.scheduleArea.innerHTML=`<div class="schedule-head"><div><p>HORAIRE</p><h3>6 matchs</h3></div><span>Touche ton équipe pour voir la liste</span></div><div class="match-list">${DAILY_MATCHES.map(m=>{
-    const saved=r?.matches?.[`m${m.id}`],result=official?saved?.result:null;
+    const saved=r?.matches?.[`m${m.id}`],result=gymSubmitted(r,m.gym)?saved?.result:null;
     let resultText="Résultat à venir",resultClass="pending";
     if(result==="draw"){resultText="Match nul · 1 point chaque équipe";resultClass=""}
     else if(result&&TEAMS[result]){resultText=`Victoire ${TEAMS[result].label}`;resultClass=""}
