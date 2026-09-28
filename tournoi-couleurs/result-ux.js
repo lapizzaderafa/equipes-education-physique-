@@ -52,7 +52,11 @@
             <div class="match-ethics-actions">
               ${[m.a, m.b].map(team => {
                 const on = m.ethics?.[team] !== false;
-                return `<button ${locked ? "disabled" : ""} aria-pressed="${on ? "true" : "false"}" class="ethics-btn team-${team} ${on ? "active" : ""}" data-ethics-match-id="${m.id}" data-ethics-team="${team}" data-ethics-on="${on ? "true" : "false"}" type="button"><span>${on ? "✓" : "✕"}</span> ${TEAMS[team].label} · ${on ? "Éthique OK" : "Point perdu"}</button>`;
+                const checkColor = team === "rouge" ? "#c7352f" : team === "vert" ? "#2f7d32" : team === "bleu" ? "#2563eb" : "#8a5a00";
+                const iconStyle = on
+                  ? `background:#fff!important;color:${checkColor}!important;-webkit-text-fill-color:${checkColor}!important`
+                  : "background:#b91c1c!important;color:#fff!important;-webkit-text-fill-color:#fff!important";
+                return `<button ${locked ? "disabled" : ""} aria-pressed="${on ? "true" : "false"}" class="ethics-btn team-${team} ${on ? "active" : ""}" data-ethics-match-id="${m.id}" data-ethics-team="${team}" data-ethics-on="${on ? "true" : "false"}" type="button"><span style="${iconStyle}">${on ? "✓" : "✕"}</span> ${TEAMS[team].label} · ${on ? "Éthique OK" : "Point perdu"}</button>`;
               }).join("")}
             </div>
           </div>
