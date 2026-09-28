@@ -88,7 +88,9 @@ function combinedCloudRecords() {
     for (const [gym, frag] of [["A", a], ["B", b]]) {
       if (!frag) continue;
       Object.entries(frag.matches || {}).forEach(([mk, mv]) => {
-        r.matches[mk] = { ...(r.matches[mk] || {}), ...mv };\n        const mm = r.matches[mk];\n        mm.ethics = { [mm.a]: mm.ethics?.[mm.a] !== false, [mm.b]: mm.ethics?.[mm.b] !== false };
+        r.matches[mk] = { ...(r.matches[mk] || {}), ...mv };
+        const mm = r.matches[mk];
+        mm.ethics = { [mm.a]: mm.ethics?.[mm.a] !== false, [mm.b]: mm.ethics?.[mm.b] !== false };
       });
       r.gymSubmissions[gym] = frag.submitted === true;
       r.gymSubmittedAt = r.gymSubmittedAt || {};
