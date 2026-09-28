@@ -1,5 +1,5 @@
 (() => {
-  const RESET_MARKER = "tournoi-reset-live-2026-09-27-v3";
+  const RESET_MARKER = "tournoi-reset-live-2026-09-27-v4";
   try {
     if (localStorage.getItem(RESET_MARKER)) return;
 

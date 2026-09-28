@@ -170,10 +170,13 @@ function saveConfirmedBackup(rows) {
   try {
     previous = JSON.parse(localStorage.getItem(BACKUP_KEY) || "null");
   } catch (error) { console.warn("Lecture de la copie locale impossible", error); }
-  if (previous?.rows?.length) {
+
+  const hasOfficialReset = rows.some(row => row.record_key === "__SYSTEM_RESET__");
+  if (previous?.rows?.length && !hasOfficialReset) {
     const keys = new Set(rows.map(row => row.record_key));
     if (previous.rows.some(row => !keys.has(row.record_key))) throw new Error("Des journées manquent dans la base en ligne. La dernière sauvegarde locale a été préservée.");
   }
+
   try {
     localStorage.setItem(BACKUP_KEY, JSON.stringify({ savedAt: new Date().toISOString(), rows }));
   } catch (error) { console.warn("Copie locale de sécurité indisponible", error); }
