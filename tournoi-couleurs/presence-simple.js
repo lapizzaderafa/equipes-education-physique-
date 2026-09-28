@@ -4,7 +4,7 @@
     const r = getRecord(selectedDate, info.level) || blankRecord(selectedDate, info);
     const teams = new Set();
     normalizedMatches(r)
-      .filter(match => match.gym === selectedGym)
+      .filter(match => match.gym === selectedGym && match.slot === 1)
       .forEach(match => {
         teams.add(match.a);
         teams.add(match.b);
