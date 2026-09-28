@@ -149,7 +149,7 @@ function renderSubmitCard() {
 
   if (mineSubmitted) {
     els.submitCard.className = `submit-card ${full ? "submitted" : ""}`;
-    els.submitCard.innerHTML = `<div class="submit-top"><h3>${full ? "Journée validée ✓" : `Gymnase ${gym} enregistré ✓`}</h3><span class="progress-pill complete">3 / 3 matchs</span></div><p>${full ? "Les deux gymnases ont soumis leurs 3 matchs. Le classement général est maintenant recalculé automatiquement." : `Tes 3 résultats sont enregistrés. En attente du gymnase ${other}. Dès qu’il soumet, le classement se met à jour sur les deux appareils.`}</p><div class="submit-actions"><button id="reopenGymBtn" class="secondary-btn" type="button">Rouvrir le gymnase ${gym}</button></div>`;
+    els.submitCard.innerHTML = `<div class="submit-top"><h3>${full ? "Journée validée ✓" : `Gymnase ${gym} enregistré ✓`}</h3><span class="progress-pill complete">3 / 3 matchs</span></div><p>${full ? "Les deux gymnases ont soumis leurs 3 matchs. Le classement général est maintenant recalculé automatiquement." : `Tes 3 résultats sont enregistrés et comptent déjà au classement. En attente du gymnase ${other} pour compléter la journée.`}</p><div class="submit-actions"><button id="reopenGymBtn" class="secondary-btn" type="button">Rouvrir le gymnase ${gym}</button></div>`;
     $("reopenGymBtn").onclick = reopenGym;
     return;
   }
@@ -194,7 +194,7 @@ async function submitGym() {
       renderAll();
       becameOfficial = lr.submitted;
     }
-    showToast(becameOfficial ? "Journée complète — classement mis à jour ✓" : `Gym ${gym} enregistré ✓`);
+    showToast(becameOfficial ? "Journée complète — classement mis à jour ✓" : `Gym ${gym} enregistré — classement mis à jour ✓`);
   } catch (e) {
     console.error(e);
     showToast("Soumission impossible — réessaie");
