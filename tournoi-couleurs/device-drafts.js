@@ -83,7 +83,7 @@
     const info = schoolInfo(selectedDate);
     const r = getRecord(selectedDate, info.level) || blankRecord(selectedDate, info);
     const match = normalizedMatches(r).find(m => m.id === id && m.gym === selectedGym);
-    if (!match || !match.result || ![match.a, match.b].includes(team)) return;
+    if (!match || ![match.a, match.b].includes(team)) return;
     const d = editDraft();
     if (!d) return;
     const current = d.fragment.matches[`m${id}`] || match;
