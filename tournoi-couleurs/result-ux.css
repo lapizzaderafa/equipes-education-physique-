@@ -20,3 +20,26 @@
 .ethics-btn.active.team-vert span{color:#2f7d32!important;-webkit-text-fill-color:#2f7d32!important}
 .ethics-btn.active.team-bleu span{color:#2563eb!important;-webkit-text-fill-color:#2563eb!important}
 .ethics-btn.active.team-jaune span{color:#8a5a00!important;-webkit-text-fill-color:#8a5a00!important}
+
+/* FINAL ethics icon contrast override */
+.match-ethics .ethics-btn.active > span{
+  background:#fff!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.match-ethics .ethics-btn.active.team-rouge > span{
+  color:#c7352f!important;
+  -webkit-text-fill-color:#c7352f!important;
+}
+.match-ethics .ethics-btn.active.team-vert > span{
+  color:#2f7d32!important;
+  -webkit-text-fill-color:#2f7d32!important;
+}
+.match-ethics .ethics-btn.active.team-bleu > span{
+  color:#2563eb!important;
+  -webkit-text-fill-color:#2563eb!important;
+}
+.match-ethics .ethics-btn.active.team-jaune > span{
+  color:#8a5a00!important;
+  -webkit-text-fill-color:#8a5a00!important;
+}
