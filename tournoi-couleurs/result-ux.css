@@ -10,3 +10,13 @@
 .ethics-btn.active.team-jaune{color:#111827!important;-webkit-text-fill-color:#111827!important}
 .ethics-btn:not(.active){color:#111827!important;-webkit-text-fill-color:#111827!important;background:#f3f4f6!important;border-color:#b91c1c!important}
 .ethics-btn:not(.active) span{color:#fff!important;-webkit-text-fill-color:#fff!important;background:#b91c1c!important}
+
+/* Ethics check icon: high contrast on team-colored buttons */
+.ethics-btn.active span{
+  background:#fff!important;
+  -webkit-text-fill-color:currentColor!important;
+}
+.ethics-btn.active.team-rouge span{color:#c7352f!important;-webkit-text-fill-color:#c7352f!important}
+.ethics-btn.active.team-vert span{color:#2f7d32!important;-webkit-text-fill-color:#2f7d32!important}
+.ethics-btn.active.team-bleu span{color:#2563eb!important;-webkit-text-fill-color:#2563eb!important}
+.ethics-btn.active.team-jaune span{color:#8a5a00!important;-webkit-text-fill-color:#8a5a00!important}
