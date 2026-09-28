@@ -150,18 +150,12 @@
       const latest = Object.fromEntries(rows.map(r => [r.record_key, r.payload]));
       const base = recordKey(d.date, d.info.level), key = draftKey(d.date, d.info.level, d.gym);
       if (!equal(latest[key], d.original)) throw new Error('Ce gym a été enregistré par un autre appareil. Ton brouillon est conservé; consulte les résultats enregistrés avant de recommencer.');
-      const bonusKey = fragmentKey(base, 'BONUS');
-      const bonus = copy(latest[bonusKey] || makeBonusFragment(d.date, d.info, blankRecord(d.date, d.info)));
       const updates = {};
       for (const [team, frag] of Object.entries(d.presence)) {
         const pk = presenceFragmentKey(base, team);
         if (!equal(latest[pk], d.presenceOriginal[team])) throw new Error('Ces présences ont été enregistrées sur un autre appareil. Ton brouillon est conservé.');
         updates[pk] = frag;
-        const stats = presenceStatsFromFragment(d.info.level, team, frag);
-        bonus.bonuses[team].attendance = stats.attendanceBonus;
-        bonus.bonuses[team].shirts = stats.shirtsBonus;
       }
-      if (Object.keys(d.presence).length) updates[bonusKey] = bonus;
       updates[key] = { ...copy(d.fragment), submitted: true, submittedAt: Date.now() };
       const body = Object.entries(updates).map(([record_key, payload]) => ({ room_id: ROOM_ID, record_key, payload, updated_at: new Date().toISOString() }));
       // One database request: matches, attendance and bonuses commit together.
