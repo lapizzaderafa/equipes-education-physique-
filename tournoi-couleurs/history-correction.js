@@ -81,10 +81,8 @@
 
   saveBonus = async function(team, bonus, value) {
     if (!requireCloud()) return;
-    if (bonus === "attendance" || bonus === "shirts") {
-      showToast("Ce point se calcule automatiquement avec les présences");
-      return;
-    }
+    showToast("Les bonus de présence se calculent automatiquement; l’éthique se règle dans chaque match.");
+    return;
     const info = schoolInfo(selectedDate), base = recordKey(selectedDate, info.level);
     const r = getRecord(selectedDate, info.level) || blankRecord(selectedDate, info);
     const submitted = daySubmitted(r);
@@ -123,8 +121,7 @@
     const locked = daySubmitted(r) && !isPastCompetitionDate();
     const labels = {
       attendance: ["👥", "Équipe complète", true],
-      shirts: ["👕", "Chandail", true],
-      spirit: ["👏", "Esprit d’équipe", false]
+      shirts: ["👕", "Chandail", true]
     };
 
     const bonusTeams = selectedGym
@@ -137,9 +134,6 @@
       return `<button ${disabled ? "disabled" : ""} class="bonus-toggle ${automatic ? "auto" : ""} ${on ? "active" : ""}" data-team="${t}" data-bonus="${k}" title="${automatic ? "Attribué automatiquement via les présences" : ""}"><span><span class="icon">${on ? "✓" : icon}</span>${label}${automatic ? "<small style='display:block;font-size:.62rem;margin-top:3px'>AUTO</small>" : ""}</span></button>`;
     }).join("")}</div></article>`).join("");
 
-    els.bonusGrid.querySelectorAll("[data-bonus='spirit']").forEach(b => {
-      if (!b.disabled) b.onclick = () => saveBonus(b.dataset.team, b.dataset.bonus, !b.classList.contains("active"));
-    });
   };
 
   renderHistory = function() {
