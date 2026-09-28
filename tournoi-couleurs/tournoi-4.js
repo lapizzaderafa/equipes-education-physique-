@@ -51,8 +51,9 @@ function pointsForSubmittedGyms(r) {
   });
   const hasSubmittedGym = gymSubmitted(r, "A") || gymSubmitted(r, "B");
   TEAM_ORDER.forEach(t => {
-    const b = r?.bonuses?.[t] || {};
-    s[t].bonusPoints = hasSubmittedGym ? ["attendance", "shirts", "spirit"].filter(k => !!b[k]).length : 0;
+    const bonus = r?.bonuses?.[t] || {};
+    s[t].bonusPoints = hasSubmittedGym ? ["attendance", "shirts"].filter(k => !!bonus[k]).length : 0;
+    s[t].bonusPoints += ethicsBonusForTeam(r, t, true);
     s[t].total = s[t].matchPoints + s[t].bonusPoints;
   });
   return s;
