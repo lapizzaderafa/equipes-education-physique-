@@ -97,8 +97,8 @@ function combinedRecords(){
   bases.forEach(base=>{
     const a=cloudFragments[`${base}_A`],b=cloudFragments[`${base}_B`],bonus=cloudFragments[`${base}_BONUS`],seed=a||b||bonus||{};
     const date=seed.date||base.slice(0,10),level=seed.level||base.slice(11),info=schoolInfo(date);
-    const r={date,cycleDay:seed.cycleDay||info.cycleDay,level,gymSubmissions:{A:!!a?.submitted,B:!!b?.submitted},matches:Object.fromEntries(DAILY_MATCHES.map(m=>[`m${m.id}`,{...m,result:null}])),bonuses:Object.fromEntries(TEAM_ORDER.map(t=>[t,{attendance:false,shirts:false,spirit:false}]))};
-    [a,b].forEach(f=>{Object.entries(f?.matches||{}).forEach(([k,v])=>r.matches[k]={...(r.matches[k]||{}),...v})});
+    const r={date,cycleDay:seed.cycleDay||info.cycleDay,level,gymSubmissions:{A:!!a?.submitted,B:!!b?.submitted},matches:Object.fromEntries(DAILY_MATCHES.map(m=>[`m${m.id}`,{...m,result:null,ethics:{[m.a]:true,[m.b]:true}}])),bonuses:Object.fromEntries(TEAM_ORDER.map(t=>[t,{attendance:false,shirts:false,spirit:false}]))};
+    [a,b].forEach(f=>{Object.entries(f?.matches||{}).forEach(([k,v])=>{r.matches[k]={...(r.matches[k]||{}),...v};const m=r.matches[k];m.ethics={[m.a]:m.ethics?.[m.a]!==false,[m.b]:m.ethics?.[m.b]!==false}})});
     if(bonus?.bonuses)r.bonuses=bonus.bonuses;
     r.submitted=r.gymSubmissions.A&&r.gymSubmissions.B;
     out[base]=r;
@@ -108,10 +108,15 @@ function combinedRecords(){
 function recordFor(date,level){return combinedRecords()[`${date}_${level}`]||null}
 function normalizedMatches(r){return r?Object.values(r.matches||{}).sort((a,b)=>a.id-b.id):[]}
 function daySubmitted(r){return !!(r?.gymSubmissions?.A&&r?.gymSubmissions?.B)}
+function ethicsBonusForTeam(r,team,submittedOnly=false){
+  const ms=normalizedMatches(r).filter(m=>(m.a===team||m.b===team)&&(!submittedOnly||gymSubmitted(r,m.gym)));
+  if(ms.length!==3||ms.some(m=>!m.result))return 0;
+  return ms.every(m=>m.ethics?.[team]!==false)?1:0;
+}
 function pointsFor(r){
   const s=Object.fromEntries(TEAM_ORDER.map(t=>[t,{matches:0,wins:0,draws:0,losses:0,matchPoints:0,bonusPoints:0,total:0}]));
   normalizedMatches(r).forEach(m=>{if(!m.result)return;s[m.a].matches++;s[m.b].matches++;if(m.result==="draw"){s[m.a].draws++;s[m.b].draws++;s[m.a].matchPoints++;s[m.b].matchPoints++}else if(m.result===m.a){s[m.a].wins++;s[m.b].losses++;s[m.a].matchPoints+=2}else if(m.result===m.b){s[m.b].wins++;s[m.a].losses++;s[m.b].matchPoints+=2}});
-  TEAM_ORDER.forEach(t=>{const b=r?.bonuses?.[t]||{};s[t].bonusPoints=["attendance","shirts","spirit"].filter(k=>!!b[k]).length;s[t].total=s[t].matchPoints+s[t].bonusPoints});
+  TEAM_ORDER.forEach(t=>{const b=r?.bonuses?.[t]||{};s[t].bonusPoints=["attendance","shirts"].filter(k=>!!b[k]).length+ethicsBonusForTeam(r,t,false);s[t].total=s[t].matchPoints+s[t].bonusPoints});
   return s;
 }
 function canonicalLevel(level){return level==="S1"||level==="S2"?"S12":level}
@@ -120,7 +125,7 @@ function pointsForSubmittedGyms(r){
   const s=Object.fromEntries(TEAM_ORDER.map(t=>[t,{matches:0,wins:0,draws:0,losses:0,matchPoints:0,bonusPoints:0,total:0}]));
   normalizedMatches(r).forEach(m=>{if(!m.result||!gymSubmitted(r,m.gym))return;s[m.a].matches++;s[m.b].matches++;if(m.result==="draw"){s[m.a].draws++;s[m.b].draws++;s[m.a].matchPoints++;s[m.b].matchPoints++}else if(m.result===m.a){s[m.a].wins++;s[m.b].losses++;s[m.a].matchPoints+=2}else if(m.result===m.b){s[m.b].wins++;s[m.a].losses++;s[m.b].matchPoints+=2}});
   const hasSubmittedGym=gymSubmitted(r,"A")||gymSubmitted(r,"B");
-  TEAM_ORDER.forEach(t=>{const b=r?.bonuses?.[t]||{};s[t].bonusPoints=hasSubmittedGym?["attendance","shirts","spirit"].filter(k=>!!b[k]).length:0;s[t].total=s[t].matchPoints+s[t].bonusPoints});
+  TEAM_ORDER.forEach(t=>{const b=r?.bonuses?.[t]||{};s[t].bonusPoints=hasSubmittedGym?["attendance","shirts"].filter(k=>!!b[k]).length:0;s[t].bonusPoints+=ethicsBonusForTeam(r,t,true);s[t].total=s[t].matchPoints+s[t].bonusPoints});
   return s;
 }
 function aggregate(filter){
