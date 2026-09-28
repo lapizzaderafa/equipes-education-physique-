@@ -105,6 +105,15 @@ function ethicsBonusForTeam(r, team, submittedOnly = false) {
     (m.a === team || m.b === team) &&
     (!submittedOnly || gymSubmitted(r, m.gym))
   );
+
+  // Aperçu de la journée: chaque équipe part avec son point d'éthique.
+  // Le point disparaît immédiatement dès qu'un arbitre marque une inconduite.
+  if (!submittedOnly) {
+    return ms.length === 3 && ms.every(m => m.ethics?.[team] !== false) ? 1 : 0;
+  }
+
+  // Classement officiel: le point n'est accordé qu'une fois les 3 matchs
+  // de l'équipe officiellement soumis.
   if (ms.length !== 3 || ms.some(m => !m.result)) return 0;
   return ms.every(m => m.ethics?.[team] !== false) ? 1 : 0;
 }
