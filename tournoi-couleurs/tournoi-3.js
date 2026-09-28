@@ -100,6 +100,15 @@ async function saveBonus(team, bonus, value) {
   }
 }
 
+function ethicsBonusForTeam(r, team, submittedOnly = false) {
+  const ms = normalizedMatches(r).filter(m =>
+    (m.a === team || m.b === team) &&
+    (!submittedOnly || gymSubmitted(r, m.gym))
+  );
+  if (ms.length !== 3 || ms.some(m => !m.result)) return 0;
+  return ms.every(m => m.ethics?.[team] !== false) ? 1 : 0;
+}
+
 function pointsFor(r) {
   const s = Object.fromEntries(TEAM_ORDER.map(t => [t, { matches: 0, wins: 0, draws: 0, losses: 0, matchPoints: 0, bonusPoints: 0, total: 0 }]));
   normalizedMatches(r).forEach(m => {
@@ -122,8 +131,8 @@ function pointsFor(r) {
     }
   });
   TEAM_ORDER.forEach(t => {
-    const b = r?.bonuses?.[t] || {};
-    s[t].bonusPoints = ["attendance", "shirts", "spirit"].filter(k => !!b[k]).length;
+    const bonus = r?.bonuses?.[t] || {};
+    s[t].bonusPoints = ["attendance", "shirts"].filter(k => !!bonus[k]).length + ethicsBonusForTeam(r, t, false);
     s[t].total = s[t].matchPoints + s[t].bonusPoints;
   });
   return s;
