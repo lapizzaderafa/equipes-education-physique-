@@ -80,6 +80,11 @@
   };
   saveBonus = async function(team, bonus, value) {
     if (bonus !== 'spirit' || !TEAM_ORDER.includes(team)) return;
+    const assignedTeams = TEAM_ORDER.filter(t => DAILY_MATCHES.some(match => match.gym === selectedGym && match.slot === 1 && (match.a === t || match.b === t)));
+    if (!assignedTeams.includes(team)) {
+      showToast('Ce bonus est géré par l’autre gymnase');
+      return;
+    }
     const d = editDraft();
     if (!d) return;
     if (!(team in d.spirits)) d.spiritOriginal[team] = !!cloudFragments[fragmentKey(recordKey(d.date, d.info.level), 'BONUS')]?.bonuses?.[team]?.spirit;

@@ -127,7 +127,11 @@
       spirit: ["👏", "Esprit d’équipe", false]
     };
 
-    els.bonusGrid.innerHTML = TEAM_ORDER.map(t => `<article class="bonus-card"><div class="bonus-title team-${t}">${TEAMS[t].label}</div><div class="bonus-options">${Object.entries(labels).map(([k, [icon, label, automatic]]) => {
+    const bonusTeams = selectedGym
+      ? TEAM_ORDER.filter(team => DAILY_MATCHES.some(match => match.gym === selectedGym && match.slot === 1 && (match.a === team || match.b === team)))
+      : TEAM_ORDER;
+
+    els.bonusGrid.innerHTML = bonusTeams.map(t => `<article class="bonus-card"><div class="bonus-title team-${t}">${TEAMS[t].label}</div><div class="bonus-options">${Object.entries(labels).map(([k, [icon, label, automatic]]) => {
       const on = !!r.bonuses?.[t]?.[k];
       const disabled = automatic || locked;
       return `<button ${disabled ? "disabled" : ""} class="bonus-toggle ${automatic ? "auto" : ""} ${on ? "active" : ""}" data-team="${t}" data-bonus="${k}" title="${automatic ? "Attribué automatiquement via les présences" : ""}"><span><span class="icon">${on ? "✓" : icon}</span>${label}${automatic ? "<small style='display:block;font-size:.62rem;margin-top:3px'>AUTO</small>" : ""}</span></button>`;
