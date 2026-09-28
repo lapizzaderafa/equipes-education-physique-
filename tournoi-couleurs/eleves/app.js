@@ -100,6 +100,15 @@ function combinedRecords(){
     const r={date,cycleDay:seed.cycleDay||info.cycleDay,level,gymSubmissions:{A:!!a?.submitted,B:!!b?.submitted},matches:Object.fromEntries(DAILY_MATCHES.map(m=>[`m${m.id}`,{...m,result:null,ethics:{[m.a]:true,[m.b]:true}}])),bonuses:Object.fromEntries(TEAM_ORDER.map(t=>[t,{attendance:false,shirts:false,spirit:false}]))};
     [a,b].forEach(f=>{Object.entries(f?.matches||{}).forEach(([k,v])=>{r.matches[k]={...(r.matches[k]||{}),...v};const m=r.matches[k];m.ethics={[m.a]:m.ethics?.[m.a]!==false,[m.b]:m.ethics?.[m.b]!==false}})});
     if(bonus?.bonuses)r.bonuses=bonus.bonuses;
+    TEAM_ORDER.forEach(team=>{
+      const pf=cloudFragments[`${base}_PRESENCE_${team.toUpperCase()}`];
+      if(!pf?.students)return;
+      const states=Object.values(pf.students),total=states.length,motivated=states.filter(x=>x?.motivated).length;
+      const eligible=Math.max(0,total-motivated),present=states.filter(x=>x?.present).length,shirts=states.filter(x=>x?.present&&x?.shirt).length;
+      r.bonuses[team]=r.bonuses[team]||{};
+      r.bonuses[team].attendance=total>0&&(eligible===0||present/eligible>=0.8);
+      r.bonuses[team].shirts=present>0&&shirts===present;
+    });
     r.submitted=r.gymSubmissions.A&&r.gymSubmissions.B;
     out[base]=r;
   });
