@@ -47,12 +47,24 @@
             ${teamResultButton(m, m.b, locked)}
           </div>
           ${resultSummary(m)}
+          <div class="match-ethics">
+            <div class="match-ethics-title"><strong>Éthique sportive</strong><span>Une inconduite dans un seul match fait perdre le point d’éthique de la journée</span></div>
+            <div class="match-ethics-actions">
+              ${[m.a, m.b].map(team => {
+                const on = m.ethics?.[team] !== false;
+                return `<button ${locked || !hasResult ? "disabled" : ""} class="ethics-btn team-${team} ${on ? "active" : ""}" data-ethics-match-id="${m.id}" data-ethics-team="${team}" type="button"><span>${on ? "✓" : "✕"}</span> ${TEAMS[team].label} · ${on ? "Éthique OK" : "Point perdu"}</button>`;
+              }).join("")}
+            </div>
+          </div>
         </article>
       </section>`;
     }).join("");
 
     els.matches.querySelectorAll("[data-match-id]").forEach(b => {
       b.onclick = () => saveMatch(Number(b.dataset.matchId), b.classList.contains("selected") ? null : b.dataset.result);
+    });
+    els.matches.querySelectorAll("[data-ethics-match-id]").forEach(b => {
+      b.onclick = () => saveMatchEthics(Number(b.dataset.ethicsMatchId), b.dataset.ethicsTeam, !b.classList.contains("active"));
     });
 
     if (typeof renderCorrectionNotice === "function") renderCorrectionNotice();
