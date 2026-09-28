@@ -97,6 +97,23 @@ function combinedCloudRecords() {
       if (frag.submittedAt) r.gymSubmittedAt[gym] = frag.submittedAt;
     }
     if (bonus?.bonuses) r.bonuses = bonus.bonuses;
+
+    // Attendance and shirt bonuses are derived directly from each team's
+    // submitted presence fragment. This avoids A/B overwriting a shared bonus row.
+    for (const team of TEAM_ORDER) {
+      const pf = cloudFragments[`${base}_PRESENCE_${team.toUpperCase()}`];
+      if (!pf?.students) continue;
+      const states = Object.values(pf.students);
+      const total = states.length;
+      const motivated = states.filter(x => x?.motivated).length;
+      const eligible = Math.max(0, total - motivated);
+      const present = states.filter(x => x?.present).length;
+      const shirts = states.filter(x => x?.present && x?.shirt).length;
+      r.bonuses[team] = r.bonuses[team] || {};
+      r.bonuses[team].attendance = total > 0 && (eligible === 0 || present / eligible >= 0.8);
+      r.bonuses[team].shirts = present > 0 && shirts === present;
+    }
+
     r.submitted = r.gymSubmissions.A && r.gymSubmissions.B;
     out[base] = normalizeRecord(r);
   });
