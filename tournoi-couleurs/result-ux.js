@@ -52,7 +52,7 @@
             <div class="match-ethics-actions">
               ${[m.a, m.b].map(team => {
                 const on = m.ethics?.[team] !== false;
-                return `<button ${locked || !hasResult ? "disabled" : ""} class="ethics-btn team-${team} ${on ? "active" : ""}" data-ethics-match-id="${m.id}" data-ethics-team="${team}" type="button"><span>${on ? "✓" : "✕"}</span> ${TEAMS[team].label} · ${on ? "Éthique OK" : "Point perdu"}</button>`;
+                return `<button ${locked ? "disabled" : ""} aria-pressed="${on ? "true" : "false"}" class="ethics-btn team-${team} ${on ? "active" : ""}" data-ethics-match-id="${m.id}" data-ethics-team="${team}" data-ethics-on="${on ? "true" : "false"}" type="button"><span>${on ? "✓" : "✕"}</span> ${TEAMS[team].label} · ${on ? "Éthique OK" : "Point perdu"}</button>`;
               }).join("")}
             </div>
           </div>
@@ -64,7 +64,7 @@
       b.onclick = () => saveMatch(Number(b.dataset.matchId), b.classList.contains("selected") ? null : b.dataset.result);
     });
     els.matches.querySelectorAll("[data-ethics-match-id]").forEach(b => {
-      b.onclick = () => saveMatchEthics(Number(b.dataset.ethicsMatchId), b.dataset.ethicsTeam, !b.classList.contains("active"));
+      b.onclick = () => saveMatchEthics(Number(b.dataset.ethicsMatchId), b.dataset.ethicsTeam, b.dataset.ethicsOn !== "true");
     });
 
     if (typeof renderCorrectionNotice === "function") renderCorrectionNotice();
