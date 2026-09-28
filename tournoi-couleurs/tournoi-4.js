@@ -1,7 +1,7 @@
 async function reopenGym() {
   if (!requireCloud()) return;
   const info = schoolInfo(selectedDate), base = recordKey(selectedDate, info.level), gym = selectedGym;
-  if (!confirm(`Rouvrir le gymnase ${gym}? Ses 3 matchs pourront être corrigés. La journée sera retirée du classement général jusqu’à ce que les deux gyms soient de nouveau soumis.`)) return;
+  if (!confirm(`Rouvrir le gymnase ${gym}? Ses 3 matchs pourront être corrigés et seront temporairement retirés du classement jusqu’à une nouvelle soumission.`)) return;
 
   try {
     if (cloudLive) {
@@ -28,13 +28,43 @@ async function reopenGym() {
 
 function activeRecords() { return cloudLive ? combinedCloudRecords() : localDB.records; }
 
+function pointsForSubmittedGyms(r) {
+  const s = Object.fromEntries(TEAM_ORDER.map(t => [t, { matches: 0, wins: 0, draws: 0, losses: 0, matchPoints: 0, bonusPoints: 0, total: 0 }]));
+  normalizedMatches(r).forEach(m => {
+    if (!m.result || !gymSubmitted(r, m.gym)) return;
+    s[m.a].matches++;
+    s[m.b].matches++;
+    if (m.result === "draw") {
+      s[m.a].draws++;
+      s[m.b].draws++;
+      s[m.a].matchPoints++;
+      s[m.b].matchPoints++;
+    } else if (m.result === m.a) {
+      s[m.a].wins++;
+      s[m.b].losses++;
+      s[m.a].matchPoints += 2;
+    } else if (m.result === m.b) {
+      s[m.b].wins++;
+      s[m.a].losses++;
+      s[m.b].matchPoints += 2;
+    }
+  });
+  const hasSubmittedGym = gymSubmitted(r, "A") || gymSubmitted(r, "B");
+  TEAM_ORDER.forEach(t => {
+    const b = r?.bonuses?.[t] || {};
+    s[t].bonusPoints = hasSubmittedGym ? ["attendance", "shirts", "spirit"].filter(k => !!b[k]).length : 0;
+    s[t].total = s[t].matchPoints + s[t].bonusPoints;
+  });
+  return s;
+}
+
 function aggregate(filter) {
   const a = Object.fromEntries(TEAM_ORDER.map(t => [t, { matches: 0, wins: 0, draws: 0, losses: 0, matchPoints: 0, bonusPoints: 0, total: 0 }]));
   Object.values(activeRecords()).forEach(raw => {
     const r = normalizeRecord(raw);
-    if (!r || r.date < COMPETITION_START || !daySubmitted(r)) return;
+    if (!r || r.date < COMPETITION_START || (!gymSubmitted(r, "A") && !gymSubmitted(r, "B"))) return;
     if (filter !== "all" && r.level !== filter) return;
-    const p = pointsFor(r);
+    const p = pointsForSubmittedGyms(r);
     TEAM_ORDER.forEach(t => Object.keys(a[t]).forEach(k => a[t][k] += p[t][k]));
   });
   return a;
