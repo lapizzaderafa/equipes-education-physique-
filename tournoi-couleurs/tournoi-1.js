@@ -109,6 +109,9 @@ async function initCloud() {
     setInterval(() => {
       if (document.visibilityState === "visible") pullCloud(false).catch(() => {});
     }, 10000);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") pullCloud(true).catch(() => {});
+    });
   } catch (e) {
     console.error(e);
     cloudLive = false;
@@ -171,10 +174,16 @@ function saveConfirmedBackup(rows) {
     previous = JSON.parse(localStorage.getItem(BACKUP_KEY) || "null");
   } catch (error) { console.warn("Lecture de la copie locale impossible", error); }
 
-  const hasOfficialReset = rows.some(row => row.record_key === "__SYSTEM_RESET__");
-  if (previous?.rows?.length && !hasOfficialReset) {
+  const resetRow = rows.find(row => row.record_key === "__SYSTEM_RESET__");
+  const resetAt = Date.parse(resetRow?.payload?.reset_at || "");
+  const previousSavedAt = Date.parse(previous?.savedAt || "");
+  const freshOfficialReset = Number.isFinite(resetAt) && (!Number.isFinite(previousSavedAt) || resetAt > previousSavedAt);
+
+  if (previous?.rows?.length && !freshOfficialReset) {
     const keys = new Set(rows.map(row => row.record_key));
-    if (previous.rows.some(row => !keys.has(row.record_key))) throw new Error("Des journées manquent dans la base en ligne. La dernière sauvegarde locale a été préservée.");
+    if (previous.rows.some(row => row.record_key !== "__SYSTEM_RESET__" && !keys.has(row.record_key))) {
+      throw new Error("Des journées manquent dans la base en ligne. La dernière sauvegarde locale a été préservée.");
+    }
   }
 
   try {
@@ -264,9 +273,14 @@ function updateGymUI() {
   els.gymTitle.textContent = selectedGym ? `Gymnase ${selectedGym}` : "Choisis ton gymnase";
   els.deviceGymText.textContent = selectedGym ? `Cet appareil est assigné au gymnase ${selectedGym}.` : "Aucun gymnase choisi.";
 }
-function showView(v) {
+async function showView(v) {
   document.querySelectorAll(".view").forEach(x => x.classList.toggle("active", x.id === `view-${v}`));
   document.querySelectorAll(".nav-btn").forEach(x => x.classList.toggle("active", x.dataset.view === v));
+
+  if (v === "ranking" || v === "history") {
+    try { await pullCloud(true); } catch (error) { console.warn("Actualisation immédiate indisponible", error); }
+  }
+
   if (v === "ranking") renderRanking();
   if (v === "history") renderHistory();
   if (v === "settings") renderOverrides();

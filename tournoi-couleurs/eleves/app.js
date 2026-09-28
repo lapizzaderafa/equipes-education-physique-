@@ -166,7 +166,7 @@ function openRoster(level,team){
   els.modal.classList.remove("hidden");
 }
 function closeRoster(){els.modal.classList.add("hidden")}
-function showView(view){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===`view-${view}`));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="ranking")renderRanking();if(view==="teams")renderTeams();window.scrollTo({top:0,behavior:"smooth"})}
+async function showView(view){document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===`view-${view}`));document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.view===view));if(view==="ranking"){try{await pullCloud(true)}catch(e){console.warn("Actualisation immédiate indisponible",e)}renderRanking()}if(view==="teams")renderTeams();window.scrollTo({top:0,behavior:"smooth"})}
 function setDate(iso){if(!iso)return;selectedDate=iso;els.datePicker.value=iso;renderSchedule()}
 function shiftDate(n){const d=parseDate(selectedDate);d.setDate(d.getDate()+n);setDate(fmt(d))}
 function parseDate(iso){const[y,m,d]=iso.split("-").map(Number);return new Date(y,m-1,d,12)}
@@ -184,6 +184,6 @@ function bind(){
 
 async function init(){
   els.datePicker.value=selectedDate;bind();renderAll();renderTeams();
-  try{await pullCloud(true);setInterval(()=>{if(document.visibilityState==="visible")pullCloud(false).catch(()=>setSync(false,"Hors ligne"))},30000)}catch(e){console.error(e);setSync(false,"Hors ligne")}
+  try{await pullCloud(true);setInterval(()=>{if(document.visibilityState==="visible")pullCloud(false).catch(()=>setSync(false,"Hors ligne"))},10000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")pullCloud(true).catch(()=>setSync(false,"Hors ligne"))})}catch(e){console.error(e);setSync(false,"Hors ligne")}
 }
 init();
