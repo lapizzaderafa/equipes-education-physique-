@@ -25,7 +25,7 @@
       const r = sharedRecord(selectedDate, info.level) || blankRecord(selectedDate, info);
       const fragment = makeGymFragment(selectedDate, info, selectedGym, r);
       drafts[key] = { date: selectedDate, info, gym: selectedGym, fragment,
-        original: copy(cloudFragments[key] || null), presence: {}, presenceOriginal: {}, spirits: {}, spiritOriginal: {} };
+        original: copy(cloudFragments[key] || null), presence: {}, presenceOriginal: {} };
     }
     return drafts[key];
   }
@@ -46,7 +46,6 @@
       Object.assign(r.matches, copy(draft.fragment.matches));
       r.gymSubmissions[draft.gym] = false;
       r.submitted = false;
-      for (const [team, value] of Object.entries(draft.spirits)) r.bonuses[team].spirit = value;
     }
 
     // Attendance + shirt bonuses must always come from the actual presence
@@ -74,22 +73,28 @@
     if (!match || (result !== null && ![match.a, match.b, 'draw'].includes(result))) return;
     const d = editDraft();
     if (!d) return;
-    d.fragment.matches[`m${id}`] = { ...match, result, updatedAt: Date.now() };
+    const ethics = { [match.a]: match.ethics?.[match.a] !== false, [match.b]: match.ethics?.[match.b] !== false };
+    d.fragment.matches[`m${id}`] = { ...match, ethics, result, updatedAt: Date.now() };
     refresh();
     showToast('Brouillon sur cet appareil — à enregistrer');
   };
-  saveBonus = async function(team, bonus, value) {
-    if (bonus !== 'spirit' || !TEAM_ORDER.includes(team)) return;
-    const assignedTeams = TEAM_ORDER.filter(t => DAILY_MATCHES.some(match => match.gym === selectedGym && match.slot === 1 && (match.a === t || match.b === t)));
-    if (!assignedTeams.includes(team)) {
-      showToast('Ce bonus est géré par l’autre gymnase');
-      return;
-    }
+  saveMatchEthics = async function(id, team, value) {
+    if (saving) return;
+    const info = schoolInfo(selectedDate);
+    const r = getRecord(selectedDate, info.level) || blankRecord(selectedDate, info);
+    const match = normalizedMatches(r).find(m => m.id === id && m.gym === selectedGym);
+    if (!match || !match.result || ![match.a, match.b].includes(team)) return;
     const d = editDraft();
     if (!d) return;
-    if (!(team in d.spirits)) d.spiritOriginal[team] = !!cloudFragments[fragmentKey(recordKey(d.date, d.info.level), 'BONUS')]?.bonuses?.[team]?.spirit;
-    d.spirits[team] = !!value;
+    const current = d.fragment.matches[`m${id}`] || match;
+    const ethics = { [match.a]: current.ethics?.[match.a] !== false, [match.b]: current.ethics?.[match.b] !== false };
+    ethics[team] = !!value;
+    d.fragment.matches[`m${id}`] = { ...current, ethics, updatedAt: Date.now() };
     refresh();
+    showToast(value ? 'Éthique maintenue pour ce match' : 'Point d’éthique perdu pour ce match');
+  };
+  saveBonus = async function() {
+    showToast("L’éthique se règle maintenant dans chaque match");
   };
   function changePresence(change) {
     const d = editDraft();
@@ -134,7 +139,7 @@
     if (!d || Object.values(d.fragment.matches).filter(m => m.result).length !== 3) {
       showToast('Complète les 3 matchs avant d’enregistrer'); return;
     }
-    if (!confirm(`Enregistrer les 3 matchs, les bonus et les présences du gym ${d.gym}? Ils seront alors partagés.`)) return;
+    if (!confirm(`Enregistrer les 3 matchs, l’éthique et les présences du gym ${d.gym}? Ils seront alors partagés.`)) return;
     saving = true;
     renderSubmitCard();
     try {
@@ -148,10 +153,6 @@
       const bonusKey = fragmentKey(base, 'BONUS');
       const bonus = copy(latest[bonusKey] || makeBonusFragment(d.date, d.info, blankRecord(d.date, d.info)));
       const updates = {};
-      for (const [team, value] of Object.entries(d.spirits)) {
-        if (!!latest[bonusKey]?.bonuses?.[team]?.spirit !== d.spiritOriginal[team]) throw new Error('Un bonus a été modifié sur un autre appareil. Ton brouillon est conservé.');
-        bonus.bonuses[team].spirit = value;
-      }
       for (const [team, frag] of Object.entries(d.presence)) {
         const pk = presenceFragmentKey(base, team);
         if (!equal(latest[pk], d.presenceOriginal[team])) throw new Error('Ces présences ont été enregistrées sur un autre appareil. Ton brouillon est conservé.');
@@ -160,7 +161,7 @@
         bonus.bonuses[team].attendance = stats.attendanceBonus;
         bonus.bonuses[team].shirts = stats.shirtsBonus;
       }
-      if (Object.keys(d.presence).length || Object.keys(d.spirits).length) updates[bonusKey] = bonus;
+      if (Object.keys(d.presence).length) updates[bonusKey] = bonus;
       updates[key] = { ...copy(d.fragment), submitted: true, submittedAt: Date.now() };
       const body = Object.entries(updates).map(([record_key, payload]) => ({ room_id: ROOM_ID, record_key, payload, updated_at: new Date().toISOString() }));
       // One database request: matches, attendance and bonuses commit together.
