@@ -43,3 +43,17 @@
   color:#8a5a00!important;
   -webkit-text-fill-color:#8a5a00!important;
 }
+
+
+/* Neutral match outcome summary: reserve team colors for team identity only */
+.result-confirmation.confirmed .result-outcome-pill.win,
+.result-confirmation.confirmed .result-outcome-pill.loss{
+  background:#fff!important;
+  color:#344054!important;
+  -webkit-text-fill-color:#344054!important;
+  border:1.5px solid #d0d5dd!important;
+  box-shadow:none!important;
+}
+.result-confirmation.confirmed .result-outcome-arrow{
+  color:#98a2b3!important;
+}
