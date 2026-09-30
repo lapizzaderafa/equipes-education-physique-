@@ -12,3 +12,10 @@
 .sport-card h3{margin:0 0 3px;font-size:1.18rem;letter-spacing:-.03em}
 .sport-card p{margin:0;color:var(--muted);font-size:.76rem;font-weight:750}
 @media(max-width:470px){.bottom-nav{width:calc(100% - 16px)}.nav-btn{font-size:.69rem;gap:3px;padding:0 3px}.nav-btn span{font-size:.95rem}}
+
+.sport-card-rules{grid-template-columns:58px minmax(0,1fr)}
+.sport-card-rules .sport-rules{grid-column:1/-1;border-top:1px solid var(--line);padding-top:13px;margin-top:2px}
+.sport-rules h4{margin:0 0 8px;font-size:.76rem;text-transform:uppercase;letter-spacing:.07em;color:#475467}
+.sport-rules ul{margin:0;padding-left:19px;color:#475467}
+.sport-rules li{padding:4px 0;font-size:.82rem;line-height:1.38;font-weight:650}
+.sport-rules li:first-child{padding-top:0}
