@@ -173,7 +173,7 @@ function presenceStatsFromFragment(level, team, frag) {
     shirts,
     motivated,
     percent,
-    attendanceBonus: total > 0 && (eligible === 0 || present / eligible >= 0.8),
+    attendanceBonus: total > 0 && (eligible === 0 || present / eligible >= (2 / 3)),
     shirtsBonus: present > 0 && shirts === present
   };
 }
@@ -270,7 +270,7 @@ function renderPresence() {
     <div class="presence-head">
       <p class="kicker">PRISE DE PRÉSENCE</p>
       <h2>${esc(LEVELS[info.level])}</h2>
-      <p>80 % et + présents = 1 point automatique. Tous les élèves présents avec leur chandail = 1 point automatique.</p>
+      <p>2/3 de l’équipe ou + présents = 1 point automatique. Tous les élèves présents avec leur chandail = 1 point automatique.</p>
     </div>
     <div class="presence-summary-grid">
       ${TEAM_ORDER.map(team => {
@@ -282,7 +282,7 @@ function renderPresence() {
       ${TEAM_ORDER.map(team => `<button type="button" class="presence-team-tab team-${team} ${team === selectedPresenceTeam ? "active" : ""}" data-presence-team="${team}">${TEAMS[team].label}</button>`).join("")}
     </div>
     <div class="presence-scorebar">
-      <div class="presence-scorebox ${selectedStats.attendanceBonus ? "good" : ""}"><strong>${selectedStats.present}/${selectedStats.eligible}</strong><span>${selectedStats.percent}% présents · ${selectedStats.motivated} motivé${selectedStats.motivated === 1 ? "" : "s"} ${selectedStats.attendanceBonus ? "· +1 point" : "· objectif 80 %"}</span></div>
+      <div class="presence-scorebox ${selectedStats.attendanceBonus ? "good" : ""}"><strong>${selectedStats.present}/${selectedStats.eligible}</strong><span>${selectedStats.percent}% présents · ${selectedStats.motivated} motivé${selectedStats.motivated === 1 ? "" : "s"} ${selectedStats.attendanceBonus ? "· +1 point" : "· objectif 2/3"}</span></div>
       <div class="presence-scorebox ${selectedStats.shirtsBonus ? "good" : ""}"><strong>${selectedStats.shirts}/${selectedStats.present || 0}</strong><span>chandails parmi les présents ${selectedStats.shirtsBonus ? "· +1 point" : ""}</span></div>
     </div>
     <article class="presence-card">
