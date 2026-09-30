@@ -8,7 +8,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Coupe Typhon — Élèves</title>
-<link rel="stylesheet" href="./style.css?v=3">
+<link rel="stylesheet" href="./style.css?v=4">
 </head>
 <body>
 <div class="app">
@@ -53,12 +53,25 @@
       </div>
       <div id="teamsList" class="teams-list"></div>
     </section>
+    <section id="view-sports" class="view">
+      <div class="page-head">
+        <p>COUPE TYPHON</p>
+        <h2>Les sports</h2>
+        <span>Les sports prévus pour les trois premiers cycles de la Coupe Typhon.</span>
+      </div>
+      <div class="sports-list">
+        <article class="sport-card"><div class="sport-cycle">Cycle 1</div><div class="sport-icon">⚽</div><div><h3>Futsal</h3><p>Premier cycle</p></div></article>
+        <article class="sport-card"><div class="sport-cycle">Cycle 2</div><div class="sport-icon">🥏</div><div><h3>Ultimate</h3><p>Deuxième cycle</p></div></article>
+        <article class="sport-card"><div class="sport-cycle">Cycle 3</div><div class="sport-icon">🏐</div><div><h3>Dodgeball</h3><p>Troisième cycle</p></div></article>
+      </div>
+    </section>
   </main>
 
   <nav class="bottom-nav">
     <button class="nav-btn active" data-view="schedule" type="button"><span>📅</span><b>Horaire</b></button>
     <button class="nav-btn" data-view="ranking" type="button"><span>🏆</span><b>Classement</b></button>
     <button class="nav-btn" data-view="teams" type="button"><span>👥</span><b>Équipes</b></button>
+    <button class="nav-btn" data-view="sports" type="button"><span>●</span><b>Les sports</b></button>
   </nav>
 
   <div id="rosterModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="rosterTitle">
@@ -72,6 +85,6 @@
     </div>
   </div>
 </div>
-<script src="./app.js?v=10"></script>
+<script src="./app.js?v=11"></script>
 </body>
 </html>
