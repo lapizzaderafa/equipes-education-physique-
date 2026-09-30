@@ -19,3 +19,8 @@
 .sport-rules ul{margin:0;padding-left:19px;color:#475467}
 .sport-rules li{padding:4px 0;font-size:.82rem;line-height:1.38;font-weight:650}
 .sport-rules li:first-child{padding-top:0}
+
+.sport-rules-toggle{grid-column:1/-1;width:100%;min-height:44px;border:0;border-top:1px solid var(--line);background:transparent;margin-top:2px;padding:12px 2px 0;display:flex;align-items:center;justify-content:space-between;color:#344054;font:inherit;font-size:.82rem;font-weight:900;text-align:left}
+.sport-rules-toggle span{font-size:1.35rem;line-height:1;transition:transform .18s ease}
+.sport-rules-toggle[aria-expanded="true"] span{transform:rotate(90deg)}
+.sport-rules[hidden]{display:none!important}
