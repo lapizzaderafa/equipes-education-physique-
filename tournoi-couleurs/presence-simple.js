@@ -51,7 +51,7 @@
         ${allowedTeams.map(team => `<button type="button" class="presence-simple-team team-${team} ${team === selectedPresenceTeam ? "active" : ""}" data-presence-team="${team}">${TEAMS[team].label}</button>`).join("")}
       </div>
 
-      <div class="presence-simple-note"><strong>${stats.present}/${stats.eligible} présents · ${stats.percent}%</strong><span>${stats.motivated} absence${stats.motivated === 1 ? "" : "s"} motivée${stats.motivated === 1 ? "" : "s"}, retirée${stats.motivated === 1 ? "" : "s"} du calcul</span></div>
+      <div class="presence-simple-note ${stats.attendanceBonus ? "presence-point-won" : ""}"><strong>${stats.present}/${stats.eligible} présents · ${stats.percent}%</strong><span>${stats.attendanceBonus ? "✓ POINT DE PRÉSENCE GAGNÉ · +1 point automatique" : "Objectif : au moins 2/3 de l’équipe présente"}${stats.motivated ? ` · ${stats.motivated} absence${stats.motivated === 1 ? "" : "s"} motivée${stats.motivated === 1 ? "" : "s"} retirée${stats.motivated === 1 ? "" : "s"} du calcul` : ""}</span></div>
 
       <label class="presence-check-all">
         <input type="checkbox" data-check-all ${allChecked ? "checked" : ""}>
