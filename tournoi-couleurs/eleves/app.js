@@ -193,6 +193,7 @@ function bind(){
   document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
   document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{rankingFilter=b.dataset.filter;document.querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===b));renderRanking()}));
   document.querySelectorAll(".team-filter").forEach(b=>b.addEventListener("click",()=>{teamLevelFilter=b.dataset.level;document.querySelectorAll(".team-filter").forEach(x=>x.classList.toggle("active",x===b));renderTeams()}));
+  document.querySelectorAll(".sport-rules-toggle").forEach(btn=>btn.addEventListener("click",()=>{const rules=btn.nextElementSibling,open=btn.getAttribute("aria-expanded")==="true";btn.setAttribute("aria-expanded",String(!open));rules.hidden=open;}));
   $("closeRoster").addEventListener("click",closeRoster);els.modal.addEventListener("click",e=>{if(e.target===els.modal)closeRoster()});document.addEventListener("keydown",e=>{if(e.key==="Escape")closeRoster()});
 }
 
