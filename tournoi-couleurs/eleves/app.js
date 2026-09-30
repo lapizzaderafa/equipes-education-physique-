@@ -188,6 +188,24 @@ function fmt(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0
 function pretty(iso){return new Intl.DateTimeFormat("fr-CA",{weekday:"long",day:"numeric",month:"long",year:"numeric"}).format(parseDate(iso))}
 function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
 
+
+function renderCurrentSport(){
+  const sports={1:"Futsal",2:"Ultimate",3:"Dodgeball"};
+  const start=parseDate("2026-09-28"),today=new Date();today.setHours(12,0,0,0);
+  const days=Math.floor((today-start)/86400000);
+  const cycle=days<0?1:Math.floor(days/14)+1;
+  const sport=sports[cycle];
+  const box=$("currentSport");
+  document.querySelectorAll("[data-sport-cycle]").forEach(el=>{
+    const n=Number(el.dataset.sportCycle),active=n===cycle&&!!sport;
+    el.classList.toggle("current",active);
+    el.textContent=active?`Cycle ${n} · En cours`:`Cycle ${n}`;
+  });
+  if(!box)return;
+  if(sport)box.innerHTML=`<span>EN CE MOMENT</span><strong>Cycle ${cycle} · ${sport}</strong><p>Sport actuel de la Coupe Typhon</p>`;
+  else box.innerHTML=`<span>EN CE MOMENT</span><strong>Cycle ${cycle}</strong><p>Le prochain sport sera annoncé bientôt.</p>`;
+}
+
 function bind(){
   $("prevDay").addEventListener("click",()=>shiftDate(-1));$("nextDay").addEventListener("click",()=>shiftDate(1));els.datePicker.addEventListener("change",()=>setDate(els.datePicker.value));
   document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
@@ -198,7 +216,7 @@ function bind(){
 }
 
 async function init(){
-  els.datePicker.value=selectedDate;bind();renderAll();renderTeams();
+  els.datePicker.value=selectedDate;bind();renderAll();renderTeams();renderCurrentSport();
   try{await pullCloud(true);setInterval(()=>{if(document.visibilityState==="visible")pullCloud(false).catch(()=>setSync(false,"Hors ligne"))},10000);document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")pullCloud(true).catch(()=>setSync(false,"Hors ligne"))})}catch(e){console.error(e);setSync(false,"Hors ligne")}
 }
 init();
